@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <RootNamespace>QdrantOperator</RootNamespace>
+		<NoWarn>$(NoWarn);1701;1702;NETSDK1138;CS8892;ASP0014;IDE0063;IDE0090;IDE0017;IDE0079;IDE0066;NU1605;MSB3026;MSB3061;CS8981;TS2792;TS2688;TS1259;CA1416;JMA001;JMC001</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<NeonOperatorCrdOutputDir>$(SolutionDir)\src\charts\qdrant-operator\crds</NeonOperatorCrdOutputDir>
+		<NeonOperatorRbacOutputDir>$(SolutionDir)\src\charts\qdrant-operator\templates</NeonOperatorRbacOutputDir>
+		<NeonOperatorWebhookOutputDir>$(SolutionDir)\src\charts\qdrant-operator\templates</NeonOperatorWebhookOutputDir>
+		<NeonOperatorAutoRegisterWebhooks>True</NeonOperatorAutoRegisterWebhooks>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Neon.Common" Version="0.10.0-beta.3" />
+		<PackageReference Include="Neon.Operator" Version="0.10.0-beta.3" />
+	</ItemGroup>
+</Project>

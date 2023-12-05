@@ -1,0 +1,106 @@
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################=
+
+# User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Files
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*_i.c
+*_p.c
+*_i.h
+*.ilk
+*.meta
+*.obj
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.tlb
+*.tli
+*.tlh
+*.tmp
+*.tmp_proj
+*.log
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+*.psess
+*.vsp
+*.vspx
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+*.opensdf
+*.sdf
+*.jmconfig
+*.suo
+**/launchSettings.json
+**/.vs/**
+# *.pubxml
+
+# Nuget Packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+# except build/, which is used as an MSBuild target.
+!**/packages/build/
+# Uncomment if necessary however generally it will be regenerated when needed
+# !**/packages/repositories.config
+
+# Random [.rnd] files are generated sometimes while building Docker
+# images.  I'm not sure where they're coming from and deleting them
+# in the image build scripts doesn't always seem to take.  We'll
+# just ignore these.
+
+*.rnd
+
+# Common ASP.NET 5 Rules
+
+bower_components/
+node_modules/
+
+################################################################################
+# Custom rules added for this repository.
+################################################################################
+
+# Build/test artifacts: 
+#
+# NOTE: This assumes that we'll never want to commit folders named: [bin] or [obj]
+
+**/bin/**
+**/obj/**
+
+/Build/**
+/Build-Cache/**
+*.mg.cs
+GeneratedEntities.cs
+GeneratedTypes.cs
+GeneratedUxTypes.cs
+/Test/**/TestResults/**
+
+#############################
+### Other generated files ###
+#############################
+
+cluster-manifest.json
+/**/*.gitignore/**
+/UpgradeLog.htm
+/ToolBin/nuget.config
+**/Protos/**/*.cs
+**/generated/**
+*.keystore
+*.bkp
+package-lock.json
+.DS_Store
+.idea/**
+.vscode/launch.json

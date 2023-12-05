@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34321.82
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5B5D43F1-1180-4B57-929C-96785A06AC74}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "qdrant-operator", "src\qdrant-operator\qdrant-operator.csproj", "{57820C1F-9267-4FB3-8D66-67E809678228}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0681D4FC-EBC2-4E19-8659-83DF7BEE2110}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "charts", "charts", "{7998FDB3-2354-4CF7-B48A-CF5F612D2FCD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "qdrant-operator", "qdrant-operator", "{5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}"
+	ProjectSection(SolutionItems) = preProject
+		charts\qdrant-operator\.helmignore = charts\qdrant-operator\.helmignore
+		charts\qdrant-operator\Chart.yaml = charts\qdrant-operator\Chart.yaml
+		charts\qdrant-operator\values.yaml = charts\qdrant-operator\values.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{7982FB86-8069-4424-8D4C-4749F50C72C3}"
+	ProjectSection(SolutionItems) = preProject
+		charts\qdrant-operator\templates\deployment.yaml = charts\qdrant-operator\templates\deployment.yaml
+		charts\qdrant-operator\templates\hpa.yaml = charts\qdrant-operator\templates\hpa.yaml
+		charts\qdrant-operator\templates\ingress.yaml = charts\qdrant-operator\templates\ingress.yaml
+		charts\qdrant-operator\templates\NOTES.txt = charts\qdrant-operator\templates\NOTES.txt
+		charts\qdrant-operator\templates\service.yaml = charts\qdrant-operator\templates\service.yaml
+		charts\qdrant-operator\templates\serviceaccount.yaml = charts\qdrant-operator\templates\serviceaccount.yaml
+		charts\qdrant-operator\templates\_helpers.tpl = charts\qdrant-operator\templates\_helpers.tpl
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crds", "crds", "{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{57820C1F-9267-4FB3-8D66-67E809678228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57820C1F-9267-4FB3-8D66-67E809678228}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57820C1F-9267-4FB3-8D66-67E809678228}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57820C1F-9267-4FB3-8D66-67E809678228}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{57820C1F-9267-4FB3-8D66-67E809678228} = {5B5D43F1-1180-4B57-929C-96785A06AC74}
+		{7998FDB3-2354-4CF7-B48A-CF5F612D2FCD} = {5B5D43F1-1180-4B57-929C-96785A06AC74}
+		{5BE76551-3FE4-4F58-A38B-4F09BBEA14D1} = {7998FDB3-2354-4CF7-B48A-CF5F612D2FCD}
+		{7982FB86-8069-4424-8D4C-4749F50C72C3} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
+		{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0B832640-D437-4400-A2A3-BFF907D5DF38}
+	EndGlobalSection
+EndGlobal
