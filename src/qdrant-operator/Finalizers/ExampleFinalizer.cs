@@ -11,21 +11,21 @@ using System.Threading.Tasks;
 
 namespace QdrantOperator
 {
-    public class ExampleFinalizer : ResourceFinalizerBase<V1ExampleEntity>
+    public class ExampleFinalizer : ResourceFinalizerBase<V1QdrantCluster>
     {
         private readonly IKubernetes k8s;
-        private readonly ILogger<ExampleController> logger;
+        private readonly ILogger<QdrantClusterController> logger;
         public ExampleFinalizer(
             IKubernetes k8s,
-            ILogger<ExampleController> logger)
+            ILogger<QdrantClusterController> logger)
         {
             this.k8s = k8s;
             this.logger = logger;
         }
 
-        public async Task FinalizeAsync(V1ExampleEntity resource)
+        public async Task FinalizeAsync(V1QdrantCluster resource)
         {
-            await SyncContext.ClearAsync;
+            await SyncContext.Clear;
 
             logger.LogInformation($"FINALIZED: {resource.Name()}");
         }

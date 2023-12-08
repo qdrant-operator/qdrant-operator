@@ -34,6 +34,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crds", "crds", "{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.qdrant-operator", "tests\Test.qdrant-operator\Test.qdrant-operator.csproj", "{430A5504-A608-4A88-9988-310278D7EA90}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C8447156-01E6-461F-AF35-26B23D8ECA44}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +48,10 @@ Global
 		{57820C1F-9267-4FB3-8D66-67E809678228}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57820C1F-9267-4FB3-8D66-67E809678228}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57820C1F-9267-4FB3-8D66-67E809678228}.Release|Any CPU.Build.0 = Release|Any CPU
+		{430A5504-A608-4A88-9988-310278D7EA90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{430A5504-A608-4A88-9988-310278D7EA90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{430A5504-A608-4A88-9988-310278D7EA90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{430A5504-A608-4A88-9988-310278D7EA90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -53,6 +61,7 @@ Global
 		{5BE76551-3FE4-4F58-A38B-4F09BBEA14D1} = {7998FDB3-2354-4CF7-B48A-CF5F612D2FCD}
 		{7982FB86-8069-4424-8D4C-4749F50C72C3} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
 		{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
+		{430A5504-A608-4A88-9988-310278D7EA90} = {C8447156-01E6-461F-AF35-26B23D8ECA44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B832640-D437-4400-A2A3-BFF907D5DF38}
