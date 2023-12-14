@@ -35,5 +35,6 @@ rules:
   - qdrant.io
   resources:
   - qdrantclusters
+  - qdrantcollections
   verbs:
   - '*'

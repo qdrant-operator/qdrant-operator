@@ -14,8 +14,10 @@ namespace Test.qdrant_operator
         {
             this.fixture = fixture;
             fixture.Operator.AddController<QdrantClusterController>();
-            fixture.RegisterType<V1StatefulSet>();
+            fixture.RegisterType<V1ConfigMap>();
             fixture.RegisterType<V1Service>();
+            fixture.RegisterType<V1ServiceAccount>();
+            fixture.RegisterType<V1StatefulSet>();
             fixture.Start();
         }
 

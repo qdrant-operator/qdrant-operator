@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 using Neon.Operator;
+using Qdrant.Client;
 
 namespace QdrantOperator
 {

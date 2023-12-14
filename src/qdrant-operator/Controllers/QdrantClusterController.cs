@@ -41,14 +41,21 @@ namespace QdrantOperator
             this.logger = logger;
         }
 
-        public async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCluster resource)
+        public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
             
             logger.LogInformation($"RECONCILING: {resource.Name()}");
 
             await finalizerManager.RegisterAllFinalizersAsync(resource);
-            
+
+            labels = new Dictionary<string, string>();
+            labels.Add("app", resource.Metadata.Name);
+            labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
+            labels.Add("app.kubernetes.io/name", resource.Metadata.Name);
+            labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
+            labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
+
             labels = new Dictionary<string, string>();
             labels.Add("app", resource.Metadata.Name);
             labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
@@ -63,6 +70,7 @@ namespace QdrantOperator
                 UpsertConfigMapAsync(resource),
                 UpsertServiceAccountAsync(resource)
             };
+
 
             await NeonHelper.WaitAllAsync(tasks);
 
@@ -92,7 +100,6 @@ namespace QdrantOperator
                 statefulSet.Metadata.Name = resource.Name();
                 statefulSet.Metadata.SetNamespace(resource.Namespace());
                 statefulSet.Metadata.Labels = labels;
-                statefulSet.Metadata.Labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
                 statefulSet.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -350,7 +357,6 @@ namespace QdrantOperator
                 service.Metadata.Name = resource.Name();
                 service.Metadata.SetNamespace(resource.Namespace());
                 service.Metadata.Labels = labels;
-                service.Metadata.Labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
             service.Spec = CreateServiceSpec(resource.Metadata.Name, false);
@@ -393,7 +399,6 @@ namespace QdrantOperator
                 service.Metadata.Name = Constants.HeadlessServiceName(resource.Metadata.Name);
                 service.Metadata.SetNamespace(resource.Namespace());
                 service.Metadata.Labels = labels;
-                service.Metadata.Labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
             service.Spec = CreateServiceSpec(resource.Metadata.Name, true);
@@ -435,7 +440,6 @@ namespace QdrantOperator
                 configMap.Metadata.Name = resource.Metadata.Name;
                 configMap.Metadata.SetNamespace(resource.Namespace());
                 configMap.Metadata.Labels = labels;
-                configMap.Metadata.Labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
                 configMap.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -501,7 +505,6 @@ service:
                 serviceAccount.Metadata.Name = resource.Name();
                 serviceAccount.Metadata.SetNamespace(resource.Namespace());
                 serviceAccount.Metadata.Labels = labels;
-                serviceAccount.Metadata.Labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
                 serviceAccount.AddOwnerReference(resource.MakeOwnerReference());
             }
 

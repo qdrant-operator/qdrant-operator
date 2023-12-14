@@ -1,0 +1,78 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: qdrantcollections.qdrant.io
+spec:
+  group: qdrant.io
+  names:
+    kind: QdrantCollection
+    plural: qdrantcollections
+    shortNames: []
+    singular: qdrantcollection
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns: []
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              vectorSpec:
+                properties: {}
+                type: object
+              shardNumber:
+                exclusiveMinimum: false
+                format: int32
+                minimum: 4.0
+                type: integer
+              shardingMethod:
+                properties:
+                  hasValue:
+                    type: boolean
+                  value:
+                    properties: {}
+                    type: object
+                type: object
+              replicationFactor:
+                exclusiveMinimum: false
+                format: int32
+                minimum: 1.0
+                type: integer
+              writeConsistencyFactor:
+                exclusiveMinimum: false
+                format: int32
+                minimum: 1.0
+                type: integer
+              onDiskPayload:
+                type: boolean
+              hnswConfig:
+                properties: {}
+                type: object
+              walConfigDiff:
+                properties: {}
+                type: object
+              optimizersConfigDiff:
+                properties: {}
+                type: object
+              initFrom:
+                properties: {}
+                type: object
+              quantizationConfig:
+                properties: {}
+                type: object
+              sparseVectors:
+                items:
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      properties: {}
+                      type: object
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources: {}

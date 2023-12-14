@@ -14,8 +14,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="FluentAssertions" Version="6.12.0" />
+		<PackageReference Include="KubernetesClient" Version="12.0.16" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
-		<PackageReference Include="Neon.Operator.Xunit" Version="1.0.0-beta.6">
+		<PackageReference Include="Neon.Operator.Xunit" Version="1.0.0-beta.9">
 			<ExcludeAssets>analyzers</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="xunit" Version="2.6.2" />
