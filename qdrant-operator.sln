@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0681D4FC-EBC2-4E19-8659-83DF7BEE2110}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "charts", "charts", "{7998FDB3-2354-4CF7-B48A-CF5F612D2FCD}"
@@ -34,7 +35,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crds", "crds", "{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.qdrant-operator", "tests\Test.qdrant-operator\Test.qdrant-operator.csproj", "{430A5504-A608-4A88-9988-310278D7EA90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.qdrant-operator", "tests\Test.qdrant-operator\Test.qdrant-operator.csproj", "{430A5504-A608-4A88-9988-310278D7EA90}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C8447156-01E6-461F-AF35-26B23D8ECA44}"
 EndProject
