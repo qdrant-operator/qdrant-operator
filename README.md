@@ -1,5 +1,5 @@
 # Qdrant Operator for Kubernetes
-
+[![.NET](https://github.com/qdrant-operator/qdrant-operator/actions/workflows/main.yml/badge.svg)](https://github.com/qdrant-operator/qdrant-operator/actions/workflows/main.yml)
 ## Introduction
 The Qdrant Operator for Kubernetes is an operator for managing Qdrant Clusters in a Kubernetes Cluster. 
 
