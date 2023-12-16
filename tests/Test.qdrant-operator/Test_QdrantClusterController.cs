@@ -1,3 +1,6 @@
+using System.Linq;
+using System.Threading.Tasks;
+
 using FluentAssertions;
 
 using k8s;
@@ -78,7 +81,9 @@ namespace Test_QdrantOperator
         }
 
         //[Fact] // waiting for bug fix in Neon.Operator.Xunit
+#pragma warning disable xUnit1013 // Public method should be marked as test
         public async Task TestFinalizeAsync()
+#pragma warning restore xUnit1013 // Public method should be marked as test
         {
             fixture.ClearResources();
 

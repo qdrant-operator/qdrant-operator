@@ -29,7 +29,7 @@ namespace QdrantOperator
         private readonly IKubernetes k8s;
         private readonly IFinalizerManager<V1QdrantCollection> finalizerManager;
         private readonly ILogger<QdrantCollectionController> logger;
-        private Dictionary<string, string> labels;
+
         public QdrantCollectionController(
             IKubernetes k8s,
             IFinalizerManager<V1QdrantCollection> finalizerManager,

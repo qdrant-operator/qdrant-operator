@@ -1,4 +1,6 @@
-﻿using Neon.Operator.Xunit;
+using System;
+
+using Neon.Operator.Xunit;
 using Neon.Xunit;
 
 using Qdrant.Client;
