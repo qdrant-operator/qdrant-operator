@@ -3,11 +3,9 @@ using System.ComponentModel;
 
 namespace QdrantOperator.Models
 {
-    public class VectorSpec : VectorSpecBase
+    public class NamedVectorSpec : VectorSpecBase
     {
-        public Dictionary<string, NamedVectorSpec> NamedVectors { get; set; }
-
-        public Qdrant.Client.Grpc.VectorParamsDiff ToGrpcDiff(VectorSpec other)
+        public Qdrant.Client.Grpc.VectorParamsDiff ToGrpcDiff(NamedVectorSpec other)
         {
             var result = new Qdrant.Client.Grpc.VectorParamsDiff();
 

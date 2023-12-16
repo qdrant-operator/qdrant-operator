@@ -154,7 +154,7 @@ namespace QdrantOperator
 
                         foreach (var item in resource.Spec.VectorSpec.NamedVectors)
                         {
-                            Models.VectorSpec other = null;
+                            Models.NamedVectorSpec other = null;
                             
                             resource.Status.CurrentSpec.VectorSpec.NamedVectors.TryGetValue(item.Key, out other);
 
