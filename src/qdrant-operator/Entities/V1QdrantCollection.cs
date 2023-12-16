@@ -1,17 +1,17 @@
-﻿using k8s.Models;
-using k8s;
-using Neon.Operator.Attributes;
-using QdrantOperator.Models;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics.Contracts;
-using static QdrantOperator.V1QdrantCollection;
 
+using k8s;
+using k8s.Models;
 
-namespace QdrantOperator.Entities
+using Neon.Operator.Attributes;
+
+using QdrantOperator.Models;
+
+namespace QdrantOperator
 {
     [KubernetesEntity(Group = KubeGroup, Kind = KubeKind, ApiVersion = KubeApiVersion, PluralName = KubePlural)]
-    public class V1QdrantCollection : IKubernetesObject<V1ObjectMeta>, ISpec<V1QdrantCollection.V1QdrantCollectionSpec>
+    public class V1QdrantCollection : IKubernetesObject<V1ObjectMeta>, ISpec<V1QdrantCollection.V1QdrantCollectionSpec>, IStatus<V1QdrantCollection.V1QdrantCollectionStatus>
     {
         /// <summary>
         /// The API version this Kubernetes type belongs to.
@@ -50,25 +50,27 @@ namespace QdrantOperator.Entities
         public V1ObjectMeta Metadata { get; set; }
         /// <inheritdoc/>
         public V1QdrantCollectionSpec Spec { get; set; }
+        public V1QdrantCollectionStatus Status { get; set; }
         public class V1QdrantCollectionSpec
         {
             public string Cluster { get; set; }
+
             public VectorSpec VectorSpec { get; set; }
 
-            [DefaultValue(null)]
-            [Range(Minimum = 4, ExclusiveMinimum = false)]
-            public int? ShardNumber { get; set; } = null;
+            [DefaultValue(1)]
+            [Range(Minimum = 1, ExclusiveMinimum = false)]
+            public int ShardNumber { get; set; } = 1;
 
             [DefaultValue(null)]
             public ShardingMethod? ShardingMethod { get; set; } = null;
 
-            [DefaultValue(null)]
+            [DefaultValue(1)]
             [Range(Minimum = 1, ExclusiveMinimum = false)]
-            public int? ReplicationFactor { get; set; } = null;
+            public int ReplicationFactor { get; set; } = 1;
 
-            [DefaultValue(null)]
+            [DefaultValue(1)]
             [Range(Minimum = 1, ExclusiveMinimum = false)]
-            public int? WriteConsistencyFactor { get; set; } = null;
+            public int WriteConsistencyFactor { get; set; } = 1;
 
             [DefaultValue(null)]
             public bool? OnDiskPayload { get; set; } = null;
@@ -79,6 +81,11 @@ namespace QdrantOperator.Entities
             public QuantizationConfig QuantizationConfig { get; set; }
             public Dictionary<string, SparseVectorParams> SparseVectors { get; set; }
 
+        }
+
+        public class V1QdrantCollectionStatus
+        {
+            public V1QdrantCollectionSpec CurrentSpec { get; set; }
         }
     }
 }

@@ -1,7 +1,11 @@
-﻿using k8s;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+using k8s;
 using k8s.Models;
 
 using Microsoft.Extensions.Logging;
+
 using Neon.Common;
 using Neon.Diagnostics;
 using Neon.Operator;
@@ -9,13 +13,7 @@ using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
 using Neon.Operator.Rbac;
-using Neon.Operator.ResourceManager;
 using Neon.Tasks;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace QdrantOperator
 {
@@ -24,7 +22,7 @@ namespace QdrantOperator
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
-
+    [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantClusterController : ResourceControllerBase<V1QdrantCluster>
     {
         private readonly IKubernetes k8s;
@@ -46,8 +44,6 @@ namespace QdrantOperator
             await SyncContext.Clear;
             
             logger.LogInformation($"RECONCILING: {resource.Name()}");
-
-            await finalizerManager.RegisterAllFinalizersAsync(resource);
 
             labels = new Dictionary<string, string>();
             labels.Add("app", resource.Metadata.Name);

@@ -9,10 +9,5 @@ namespace QdrantOperator.Models
 
         [DefaultValue(null)]
         public string StorageClassName { get; set; } = null;
-
-
     }
-
 }
-
-

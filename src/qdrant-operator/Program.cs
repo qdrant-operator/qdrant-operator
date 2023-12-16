@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-using System.Threading.Tasks;
 
 namespace QdrantOperator
 {

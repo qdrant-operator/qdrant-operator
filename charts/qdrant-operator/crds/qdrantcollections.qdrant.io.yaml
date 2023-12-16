@@ -18,8 +18,70 @@ spec:
         properties:
           spec:
             properties:
+              cluster:
+                type: string
               vectorSpec:
-                properties: {}
+                properties:
+                  size:
+                    format: int32
+                    type: integer
+                  distance:
+                    type: string
+                  hnswConfig:
+                    properties:
+                      m:
+                        exclusiveMinimum: false
+                        format: int32
+                        minimum: 0.0
+                        type: integer
+                      efConstruct:
+                        exclusiveMinimum: false
+                        format: int32
+                        minimum: 4.0
+                        type: integer
+                      fullScanThreshold:
+                        exclusiveMinimum: false
+                        format: int32
+                        minimum: 10.0
+                        type: integer
+                      maxIndexingThreads:
+                        exclusiveMinimum: false
+                        format: int32
+                        minimum: 0.0
+                        type: integer
+                      onDisk:
+                        type: boolean
+                      payloadM:
+                        exclusiveMinimum: false
+                        format: int32
+                        minimum: 0.0
+                        type: integer
+                    type: object
+                  quantizationConfig:
+                    properties:
+                      scalarQuantizationConfig:
+                        properties:
+                          type:
+                            type: string
+                          quantile:
+                            exclusiveMaximum: false
+                            exclusiveMinimum: false
+                            format: float
+                            maximum: 1.0
+                            minimum: 0.5
+                            type: number
+                          alwaysRam:
+                            type: boolean
+                        type: object
+                      productQuantization:
+                        properties: {}
+                        type: object
+                      binaryQuantization:
+                        properties: {}
+                        type: object
+                    type: object
+                  onDisk:
+                    type: boolean
                 type: object
               shardNumber:
                 exclusiveMinimum: false
@@ -31,8 +93,7 @@ spec:
                   hasValue:
                     type: boolean
                   value:
-                    properties: {}
-                    type: object
+                    type: string
                 type: object
               replicationFactor:
                 exclusiveMinimum: false
@@ -47,19 +108,116 @@ spec:
               onDiskPayload:
                 type: boolean
               hnswConfig:
-                properties: {}
+                properties:
+                  m:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  efConstruct:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 4.0
+                    type: integer
+                  fullScanThreshold:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 10.0
+                    type: integer
+                  maxIndexingThreads:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  onDisk:
+                    type: boolean
+                  payloadM:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
                 type: object
               walConfigDiff:
-                properties: {}
+                properties:
+                  walCapacityMb:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 1.0
+                    type: integer
+                  walSegmentsAhead:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
                 type: object
               optimizersConfigDiff:
-                properties: {}
+                properties:
+                  deletedThreshold:
+                    format: double
+                    type: number
+                  vacuumMinVectorNumber:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  defaultSegmentNumber:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  maxSegmentSize:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  memmapThreshold:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  indexingThreshold:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  flushIntervalSec:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  maxOptimizationThreads:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
                 type: object
               initFrom:
-                properties: {}
+                properties:
+                  collection:
+                    type: string
                 type: object
               quantizationConfig:
-                properties: {}
+                properties:
+                  scalarQuantizationConfig:
+                    properties:
+                      type:
+                        type: string
+                      quantile:
+                        exclusiveMaximum: false
+                        exclusiveMinimum: false
+                        format: float
+                        maximum: 1.0
+                        minimum: 0.5
+                        type: number
+                      alwaysRam:
+                        type: boolean
+                    type: object
+                  productQuantization:
+                    properties: {}
+                    type: object
+                  binaryQuantization:
+                    properties: {}
+                    type: object
                 type: object
               sparseVectors:
                 items:
@@ -67,7 +225,17 @@ spec:
                     key:
                       type: string
                     value:
-                      properties: {}
+                      properties:
+                        index:
+                          properties:
+                            fullScanThreshold:
+                              exclusiveMinimum: false
+                              format: int32
+                              minimum: 0.0
+                              type: integer
+                            onDisk:
+                              type: boolean
+                          type: object
                       type: object
                   type: object
                 type: array

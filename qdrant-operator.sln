@@ -10,6 +10,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0681D4FC-EBC2-4E19-8659-83DF7BEE2110}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -24,16 +27,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "qdrant-operator", "qdrant-o
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{7982FB86-8069-4424-8D4C-4749F50C72C3}"
 	ProjectSection(SolutionItems) = preProject
+		charts\qdrant-operator\templates\clusterrole-qdrant-operator.yaml = charts\qdrant-operator\templates\clusterrole-qdrant-operator.yaml
+		charts\qdrant-operator\templates\clusterrolebinding-qdrant-operator.yaml = charts\qdrant-operator\templates\clusterrolebinding-qdrant-operator.yaml
 		charts\qdrant-operator\templates\deployment.yaml = charts\qdrant-operator\templates\deployment.yaml
-		charts\qdrant-operator\templates\hpa.yaml = charts\qdrant-operator\templates\hpa.yaml
-		charts\qdrant-operator\templates\ingress.yaml = charts\qdrant-operator\templates\ingress.yaml
 		charts\qdrant-operator\templates\NOTES.txt = charts\qdrant-operator\templates\NOTES.txt
-		charts\qdrant-operator\templates\service.yaml = charts\qdrant-operator\templates\service.yaml
+		charts\qdrant-operator\templates\role-qdrant-operator.yaml = charts\qdrant-operator\templates\role-qdrant-operator.yaml
+		charts\qdrant-operator\templates\rolebinding-qdrant-operator.yaml = charts\qdrant-operator\templates\rolebinding-qdrant-operator.yaml
+		charts\qdrant-operator\templates\serviceaccount-qdrant-operator.yaml = charts\qdrant-operator\templates\serviceaccount-qdrant-operator.yaml
 		charts\qdrant-operator\templates\serviceaccount.yaml = charts\qdrant-operator\templates\serviceaccount.yaml
 		charts\qdrant-operator\templates\_helpers.tpl = charts\qdrant-operator\templates\_helpers.tpl
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crds", "crds", "{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1}"
+	ProjectSection(SolutionItems) = preProject
+		charts\qdrant-operator\crds\qdrantclusters.qdrant.io.yaml = charts\qdrant-operator\crds\qdrantclusters.qdrant.io.yaml
+		charts\qdrant-operator\crds\qdrantcollections.qdrant.io.yaml = charts\qdrant-operator\crds\qdrantcollections.qdrant.io.yaml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.qdrant-operator", "tests\Test.qdrant-operator\Test.qdrant-operator.csproj", "{430A5504-A608-4A88-9988-310278D7EA90}"
 EndProject

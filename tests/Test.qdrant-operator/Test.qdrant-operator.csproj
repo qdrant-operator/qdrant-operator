@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<RootNamespace>Test.qdrant_operator</RootNamespace>
+		<RootNamespace>Test.QdrantOperator</RootNamespace>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
@@ -19,6 +19,7 @@
 		<PackageReference Include="Neon.Operator.Xunit" Version="1.0.0-beta.9">
 			<ExcludeAssets>analyzers</ExcludeAssets>
 		</PackageReference>
+		<PackageReference Include="Qdrant.Client" Version="1.7.0" />
 		<PackageReference Include="xunit" Version="2.6.2" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -29,6 +30,16 @@
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
 	</ItemGroup>
+
+  <ItemGroup>
+    <None Remove="xunit.runner.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\qdrant-operator\qdrant-operator.csproj" />
