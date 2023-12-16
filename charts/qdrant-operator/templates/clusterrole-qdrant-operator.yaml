@@ -35,6 +35,8 @@ rules:
   - qdrant.io
   resources:
   - qdrantclusters
+  - qdrantclusters/status
   - qdrantcollections
+  - qdrantcollections/status
   verbs:
   - '*'

@@ -172,7 +172,7 @@ spec:
               shardNumber:
                 exclusiveMinimum: false
                 format: int32
-                minimum: 1.0
+                minimum: 4.0
                 type: integer
               shardingMethod:
                 properties:
@@ -492,7 +492,7 @@ spec:
                   shardNumber:
                     exclusiveMinimum: false
                     format: int32
-                    minimum: 1.0
+                    minimum: 4.0
                     type: integer
                   shardingMethod:
                     properties:

@@ -19,7 +19,7 @@ namespace QdrantOperator
 {
     [RbacRule<V1StatefulSet>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ConfigMap>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
-    [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [ResourceController(AutoRegisterFinalizers = true)]
@@ -274,6 +274,7 @@ namespace QdrantOperator
                                 }
                             }
                         },
+                        NodeSelector                  = resource.Spec.NodeSelector,
                         RestartPolicy                 = "Always",
                         TerminationGracePeriodSeconds = 30,
                         DnsPolicy                     = "ClusterFirst",
@@ -409,6 +410,8 @@ namespace QdrantOperator
 
             if (exists)
             {
+                service.Spec.ClusterIP = null; // it's immutable
+
                 await k8s.CoreV1.ReplaceNamespacedServiceAsync(
                     body:               service,
                     name:               service.Name(),
@@ -459,7 +462,7 @@ if [ ""$SET_INDEX"" = ""0"" ]; then
     exec ./entrypoint.sh --uri 'http://{Constants.QdrantContainerName}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335'
 else
     exec ./entrypoint.sh --bootstrap 'http://{Constants.QdrantContainerName}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335' --uri 'http://{Constants.QdrantContainerName}-'""$SET_INDEX""'.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335'
-fi");
+fi".Replace("\r\n", "\n"));
             configData.Add("production.yaml", 
 $@"cluster:
   consensus:
@@ -468,7 +471,7 @@ $@"cluster:
   p2p:
     port: 6335
 service:
-  enable_tls: false");
+  enable_tls: false".Replace("\r\n", "\n"));
             configMap.Data = configData;
 
             if (exists)

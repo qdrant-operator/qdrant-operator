@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
+using Neon.Common;
 using Neon.Diagnostics;
 using Neon.Operator;
 
@@ -25,6 +28,11 @@ namespace QdrantOperator
         {
             var loggerFactory = LoggerFactory.Create(options =>
             {
+                if (NeonHelper.IsDevWorkstation)
+                {
+                    options.SetMinimumLevel(LogLevel.Debug);
+                }
+
                 options.ClearProviders();
                 options.AddJsonConsole();
             });

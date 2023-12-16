@@ -57,9 +57,9 @@ namespace QdrantOperator
 
             public VectorSpec VectorSpec { get; set; }
 
-            [DefaultValue(1)]
-            [Range(Minimum = 1, ExclusiveMinimum = false)]
-            public int ShardNumber { get; set; } = 1;
+            [DefaultValue(4)]
+            [Range(Minimum = 4, ExclusiveMinimum = false)]
+            public int ShardNumber { get; set; } = 4;
 
             [DefaultValue(null)]
             public ShardingMethod? ShardingMethod { get; set; } = null;

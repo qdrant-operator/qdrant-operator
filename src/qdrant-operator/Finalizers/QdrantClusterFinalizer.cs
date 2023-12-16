@@ -6,6 +6,7 @@ using k8s.Models;
 
 using Microsoft.Extensions.Logging;
 
+using Neon.Diagnostics;
 using Neon.Operator.Finalizers;
 using Neon.Tasks;
 
@@ -35,7 +36,7 @@ namespace QdrantOperator
             await DeleteConfigMapAsync(resource);
             await DeleteServiceAccountAsync(resource);
 
-            logger.LogInformation($"FINALIZED: {resource.Name()}");
+            logger.LogInformationEx(() => $"FINALIZED: {resource.Name()}");
         }
 
         public async Task DeleteStatefulsetAsync(V1QdrantCluster resource)

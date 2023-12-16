@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel;
 
 using k8s;
@@ -61,6 +62,7 @@ namespace QdrantOperator
 
             [DefaultValue(false)]
             public bool ServiceMonitors { get; set; } = false;
+            public Dictionary<string, string> NodeSelector { get; set; }
         }
 
         public class V1QdrantClusterStatus

@@ -17,7 +17,8 @@ namespace QdrantOperator
         public const string ServiceName = "qdrant-operator";
         public static async Task Main(string[] args)
         {
-            var listenPort = 80;
+            var listenPort = 5000;
+
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LISTEN_PORT")))
             {
                 int.TryParse(Environment.GetEnvironmentVariable("LISTEN_PORT"), out listenPort);
@@ -35,26 +36,22 @@ namespace QdrantOperator
 
             var tracingOtlpEndpoint = Environment.GetEnvironmentVariable("TRACING_OTLP_ENDPOINT");
 
-            host.Services.AddOpenTelemetry()
-                .ConfigureResource(resource => resource
-                .AddService(serviceName: TraceContext.ActivitySourceName))
-                .WithTracing(tracing =>
-                {
-                    tracing.AddAspNetCoreInstrumentation();
-                    tracing.AddKubernetesOperatorInstrumentation();
-                    tracing.AddSource(TraceContext.ActivitySourceName);
-                    if (tracingOtlpEndpoint != null)
+            if (!string.IsNullOrEmpty(tracingOtlpEndpoint))
+            {
+                host.Services.AddOpenTelemetry()
+                    .ConfigureResource(resource => resource
+                    .AddService(serviceName: TraceContext.ActivitySourceName))
+                    .WithTracing(tracing =>
                     {
+                        tracing.AddAspNetCoreInstrumentation();
+                        tracing.AddKubernetesOperatorInstrumentation();
+                        tracing.AddSource(TraceContext.ActivitySourceName);
                         tracing.AddOtlpExporter(otlpOptions =>
                         {
                             otlpOptions.Endpoint = new Uri(tracingOtlpEndpoint);
                         });
-                    }
-                    else
-                    {
-                        tracing.AddConsoleExporter();
-                    }
-                });
+                    });
+            }
 
             await host.Build().RunAsync();
         }

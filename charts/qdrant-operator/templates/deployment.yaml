@@ -36,12 +36,12 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: LISTEN_PORT
-              value: "{{ .Values.service.port }}"
+              value: "{{ .Values.service.containerPort }}"
             - name: METRICS_PORT
               value: "{{ .Values.metrics.port }}"
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: {{ .Values.service.containerPort }}
               protocol: TCP
 {{- if and .Values.metrics.enabled  }}
             - name: http-metrics
@@ -50,11 +50,11 @@ spec:
 {{- end }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /healthz
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /ready
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

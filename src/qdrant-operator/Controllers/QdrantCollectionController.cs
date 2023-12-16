@@ -1,9 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Grpc.Core;
+
 using k8s;
+using k8s.Models;
 
 using Microsoft.Extensions.Logging;
 
@@ -23,23 +25,26 @@ using QdrantOperator.Extensions;
 
 namespace QdrantOperator
 {
-    [RbacRule<V1QdrantCollection>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
-    [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1QdrantCollection>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
+    [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantCollectionController : ResourceControllerBase<V1QdrantCollection>
     {
         private readonly IKubernetes                           k8s;
         private readonly IFinalizerManager<V1QdrantCollection> finalizerManager;
         private readonly ILogger<QdrantCollectionController>   logger;
+        private readonly ILoggerFactory                        loggerFactory;
 
         public QdrantCollectionController(
-            IKubernetes k8s,
+            IKubernetes                           k8s,
             IFinalizerManager<V1QdrantCollection> finalizerManager,
-            ILogger<QdrantCollectionController> logger)
+            ILogger<QdrantCollectionController>   logger,
+            ILoggerFactory?                       loggerFactory)
         {
             this.k8s              = k8s;
             this.finalizerManager = finalizerManager;
             this.logger           = logger;
+            this.loggerFactory    = loggerFactory;
         }
 
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCollection resource)
@@ -53,14 +58,24 @@ namespace QdrantOperator
 
             if (clusters.Count() != 1)
             {
+                logger?.LogErrorEx(() => $"Cluster: {resource.Spec.Cluster} not found, requeuing.");
+
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }
 
             var cluster = clusters.First();
-            var qdrantClient = new QdrantClient(
-                host:  $"{cluster.Metadata.Name}.{cluster.Metadata.NamespaceProperty}",
-                port:  6334,
-                https: false);
+
+            var clusterHost = $"{cluster.Metadata.Name}.{resource.Metadata.NamespaceProperty}";
+            var clusterPort = 6334;
+
+            logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");
+
+                var qdrantClient = new QdrantClient(
+                    host:          clusterHost,
+                    port:          clusterPort,
+                    https:         false,
+                    grpcTimeout:   TimeSpan.FromSeconds(60),
+                    loggerFactory: loggerFactory);
 
             try
             {
@@ -72,15 +87,20 @@ namespace QdrantOperator
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }
 
-            var patch = OperatorHelper.CreatePatch<V1QdrantCollection>();
+            resource = await k8s.CustomObjects.ReadNamespacedCustomObjectAsync<V1QdrantCollection>(resource.Name(), resource.Namespace());
 
-            patch.Replace(c => c.Status, new V1QdrantCollection.V1QdrantCollectionStatus());
-            patch.Replace(c => c.Status.CurrentSpec, resource.Spec);
+            resource.Status = new V1QdrantCollection.V1QdrantCollectionStatus()
+            {
+                CurrentSpec = resource.Spec
+            };
 
-            await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<V1QdrantCollection>(
-                patch: OperatorHelper.ToV1Patch(patch),
-                name: resource.Metadata.Name,
-                namespaceParameter: resource.Metadata.NamespaceProperty);
+            var collection = await k8s.CustomObjects.ReplaceNamespacedCustomObjectStatusAsync<V1QdrantCollection>(
+                body:               resource,
+                group:              V1QdrantCollection.KubeGroup,
+                version:            V1QdrantCollection.KubeApiVersion,
+                namespaceParameter: resource.Metadata.NamespaceProperty,
+                plural:             V1QdrantCollection.KubePlural,
+                name:               resource.Metadata.Name);
 
             return ResourceControllerResult.Ok();
         }
@@ -111,9 +131,14 @@ namespace QdrantOperator
                     exists = true;
                 }
             }
-            catch (Exception)
+            catch (RpcException e) when (e.StatusCode == StatusCode.NotFound)
             {
                 // doesn't exist
+            }
+            catch (RpcException e)
+            {
+                logger?.LogErrorEx(e);
+                throw;
             }
 
             if (exists)
@@ -124,24 +149,25 @@ namespace QdrantOperator
                 {
                     var collectionParams = new CollectionParamsDiff();
 
-                    if (resource.Spec.OnDiskPayload != resource.Status.CurrentSpec.OnDiskPayload)
+                    if (resource.Spec.OnDiskPayload.HasValue
+                        && resource.Spec.OnDiskPayload != resource.Status?.CurrentSpec?.OnDiskPayload)
                     {
                         collectionParams.OnDiskPayload = resource.Spec.OnDiskPayload.Value;
                     }
 
-                    if (resource.Spec.ReplicationFactor != resource.Status.CurrentSpec.ReplicationFactor)
+                    if (resource.Spec.ReplicationFactor != resource.Status?.CurrentSpec?.ReplicationFactor)
                     {
                         collectionParams.ReplicationFactor = (uint)resource.Spec.ReplicationFactor;
                     }
 
-                    if (resource.Spec.WriteConsistencyFactor != resource.Status.CurrentSpec.WriteConsistencyFactor)
+                    if (resource.Spec.WriteConsistencyFactor != resource.Status?.CurrentSpec?.WriteConsistencyFactor)
                     {
                         collectionParams.WriteConsistencyFactor = (uint)resource.Spec.WriteConsistencyFactor;
                     }
 
-                    var optimizersConfig = resource.Spec.OptimizersConfigDiff?.ToGrpc(resource.Status.CurrentSpec.OptimizersConfigDiff);
-                    var hnswConfig = resource.Spec.HnswConfig?.ToGrpc(resource.Status.CurrentSpec.HnswConfig);
-                    var quantizationConfig = resource.Spec.QuantizationConfig?.ToGrpc(resource.Status.CurrentSpec.QuantizationConfig);
+                    var optimizersConfig   = resource.Spec.OptimizersConfigDiff?.ToGrpc(resource.Status?.CurrentSpec?.OptimizersConfigDiff);
+                    var hnswConfig         = resource.Spec.HnswConfig?.ToGrpc(resource.Status?.CurrentSpec?.HnswConfig);
+                    var quantizationConfig = resource.Spec.QuantizationConfig?.ToGrpc(resource.Status?.CurrentSpec?.QuantizationConfig);
 
                     var sparseVectorsConfig = new SparseVectorConfig();
 
@@ -166,7 +192,7 @@ namespace QdrantOperator
                         {
                             Models.NamedVectorSpec other = null;
                             
-                            resource.Status.CurrentSpec.VectorSpec.NamedVectors.TryGetValue(item.Key, out other);
+                            resource.Status?.CurrentSpec?.VectorSpec.NamedVectors.TryGetValue(item.Key, out other);
 
                             var vectorParams = new VectorParamsDiff()
                             {
@@ -193,7 +219,7 @@ namespace QdrantOperator
                     }
                     else
                     {
-                        var vectorsConfig = resource.Spec.VectorSpec?.ToGrpcDiff(resource.Status.CurrentSpec.VectorSpec);
+                        var vectorsConfig = resource.Spec.VectorSpec?.ToGrpcDiff(resource.Status?.CurrentSpec?.VectorSpec);
 
                         await qdrantClient.UpdateCollectionAsync(
                             collectionName:      resource.Metadata.Name,
