@@ -1,9 +1,14 @@
+using System;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Neon.Diagnostics;
 using Neon.Operator;
+
+using Prometheus;
 
 namespace QdrantOperator
 {
@@ -18,13 +23,31 @@ namespace QdrantOperator
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILoggerFactory>(LoggerFactory.Create(options =>
-                {
-                    options.ClearProviders();
-                    options.AddJsonConsole();
-                }));
+            var loggerFactory = LoggerFactory.Create(options =>
+            {
+                options.ClearProviders();
+                options.AddJsonConsole();
+            });
+
+            var logger = loggerFactory.CreateLogger<OperatorStartup>();
+
+            services.AddSingleton<ILoggerFactory>(loggerFactory);
             services.AddLogging();
             services.AddKubernetesOperator();
+
+            var metricsPort = 9762;
+
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("METRICS_PORT")))
+            {
+                int.TryParse(Environment.GetEnvironmentVariable("METRICS_PORT"), out metricsPort);
+            }
+
+            logger?.LogInformationEx(() => $"Configuring metrics port: {metricsPort}");
+
+            services.AddMetricServer(options =>
+            {
+                options.Port = (ushort)metricsPort;
+            });
         }
 
         public void Configure(IApplicationBuilder app)

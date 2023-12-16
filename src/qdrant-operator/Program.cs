@@ -14,14 +14,22 @@ namespace QdrantOperator
 {
     public static partial class Program
     {
+        public const string ServiceName = "qdrant-operator";
         public static async Task Main(string[] args)
         {
+            var listenPort = 80;
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LISTEN_PORT")))
+            {
+                int.TryParse(Environment.GetEnvironmentVariable("LISTEN_PORT"), out listenPort);
+            }
+
             var host = KubernetesOperatorHost
                .CreateDefaultBuilder()
                .ConfigureOperator(settings =>
                {
                    settings.AssemblyScanningEnabled = false;
-                   settings.Name                    = "qdrant-operator";
+                   settings.Name                    = ServiceName;
+                   settings.Port                    = listenPort;
                })
                .UseStartup<OperatorStartup>();
 

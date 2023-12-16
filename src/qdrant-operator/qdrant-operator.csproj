@@ -27,6 +27,7 @@
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
+        <PackageReference Include="prometheus-net" Version="8.2.0" />
         <PackageReference Include="Qdrant.Client" Version="1.7.0" />
     </ItemGroup>
 </Project>
