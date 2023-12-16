@@ -31,13 +31,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 		charts\qdrant-operator\templates\clusterrole-qdrant-operator.yaml = charts\qdrant-operator\templates\clusterrole-qdrant-operator.yaml
 		charts\qdrant-operator\templates\clusterrolebinding-qdrant-operator.yaml = charts\qdrant-operator\templates\clusterrolebinding-qdrant-operator.yaml
 		charts\qdrant-operator\templates\deployment.yaml = charts\qdrant-operator\templates\deployment.yaml
-		hpa.yaml = hpa.yaml
+		charts\qdrant-operator\templates\hpa.yaml = charts\qdrant-operator\templates\hpa.yaml
 		charts\qdrant-operator\templates\NOTES.txt = charts\qdrant-operator\templates\NOTES.txt
 		charts\qdrant-operator\templates\role-qdrant-operator.yaml = charts\qdrant-operator\templates\role-qdrant-operator.yaml
 		charts\qdrant-operator\templates\rolebinding-qdrant-operator.yaml = charts\qdrant-operator\templates\rolebinding-qdrant-operator.yaml
-		service.yaml = service.yaml
+		charts\qdrant-operator\templates\service.yaml = charts\qdrant-operator\templates\service.yaml
 		charts\qdrant-operator\templates\serviceaccount-qdrant-operator.yaml = charts\qdrant-operator\templates\serviceaccount-qdrant-operator.yaml
-		charts\qdrant-operator\templates\serviceaccount.yaml = charts\qdrant-operator\templates\serviceaccount.yaml
+		charts\qdrant-operator\templates\servicemonitor.yaml = charts\qdrant-operator\templates\servicemonitor.yaml
 		charts\qdrant-operator\templates\_helpers.tpl = charts\qdrant-operator\templates\_helpers.tpl
 	EndProjectSection
 EndProject

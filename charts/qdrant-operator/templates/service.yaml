@@ -11,5 +11,11 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+{{- if and .Values.metrics.enabled  }}
+    - port: {{ .Values.metrics.port }}
+      protocol: TCP
+      name: http-metrics
+      targetPort: {{ .Values.metrics.port }}
+{{- end }}
   selector:
     {{- include "qdrant-operator.selectorLabels" . | nindent 4 }}
