@@ -33,7 +33,6 @@ namespace QdrantOperator
                 .WithTracing(tracing =>
                 {
                     tracing.AddAspNetCoreInstrumentation();
-                    tracing.AddHttpClientInstrumentation();
                     tracing.AddKubernetesOperatorInstrumentation();
                     tracing.AddSource(TraceContext.ActivitySourceName);
                     if (tracingOtlpEndpoint != null)
