@@ -46,6 +46,8 @@ namespace QdrantOperator
         {
             await SyncContext.Clear;
 
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             var clusters = (await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1QdrantCluster>(resource.Metadata.NamespaceProperty))
                 .Items.Where(c => c.Metadata.Name == resource.Spec.Cluster);
 
@@ -83,13 +85,21 @@ namespace QdrantOperator
             return ResourceControllerResult.Ok();
         }
 
-        public override Task DeletedAsync(V1QdrantCollection entity)
+        public override async Task DeletedAsync(V1QdrantCollection entity)
         {
-            return base.DeletedAsync(entity);
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            await base.DeletedAsync(entity);
         }
 
         public async Task CreateCollectionAsync(QdrantClient qdrantClient, V1QdrantCollection resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             var exists = false;
             CollectionInfo collectionInfo = null;
             try

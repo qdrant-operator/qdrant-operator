@@ -17,19 +17,21 @@ namespace QdrantOperator
 {
     public class QdrantCollectionFinalizer: ResourceFinalizerBase<V1QdrantCollection>
     {
-        private readonly IKubernetes k8s;
+        private readonly IKubernetes                         k8s;
         private readonly ILogger<QdrantCollectionController> logger;
         public QdrantCollectionFinalizer(
-            IKubernetes k8s,
+            IKubernetes                         k8s,
             ILogger<QdrantCollectionController> logger)
         {
-            this.k8s = k8s;
+            this.k8s    = k8s;
             this.logger = logger;
         }
 
         public override async Task FinalizeAsync(V1QdrantCollection resource)
         {
             await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
 
             logger.LogInformation($"FINALIZED: {resource.Name()}");
 
@@ -42,16 +44,21 @@ namespace QdrantOperator
             }
 
             var cluster = clusters.First();
+
             var qdrantClient = new QdrantClient(
-                host: $"{cluster.Metadata.Name}.{cluster.Metadata.NamespaceProperty}",
-                port: 6334,
-            https: false);
+                host:  $"{cluster.Metadata.Name}.{cluster.Metadata.NamespaceProperty}",
+                port:  6334,
+                https: false);
 
             await FinalizeCollectionAsync(qdrantClient, resource);
         }
 
         public async Task FinalizeCollectionAsync(QdrantClient qdrantClient, V1QdrantCollection resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             try
             {
                 Qdrant.Client.Grpc.CollectionInfo collectionInfo = null;

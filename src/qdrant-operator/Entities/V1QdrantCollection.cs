@@ -80,7 +80,6 @@ namespace QdrantOperator
             public InitFrom InitFrom { get; set; }
             public QuantizationConfig QuantizationConfig { get; set; }
             public Dictionary<string, SparseVectorParams> SparseVectors { get; set; }
-
         }
 
         public class V1QdrantCollectionStatus

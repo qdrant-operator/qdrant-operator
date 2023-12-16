@@ -64,15 +64,20 @@ namespace Test_QdrantOperator
             await controller.ReconcileAsync(qdrantCluster);
 
             // verify result
-            var statefulsets = fixture.Resources.OfType<V1StatefulSet>();
-            var service = fixture.Resources.OfType<V1Service>();
-            var configMap = fixture.Resources.OfType<V1ConfigMap>();
-            var serviceAccount = fixture.Resources.OfType<V1ServiceAccount>();
+            var statefulsets   = fixture.GetResources<V1StatefulSet>();
+            var services       = fixture.GetResources<V1Service>();
+            var clusterIp      = fixture.GetResource<V1Service>(qdrantCluster.Metadata.Name, qdrantCluster.Metadata.NamespaceProperty);
+            var headless       = fixture.GetResource<V1Service>(Constants.HeadlessServiceName(qdrantCluster.Metadata.Name), qdrantCluster.Metadata.NamespaceProperty);
+            var configMap      = fixture.GetResources<V1ConfigMap>();
+            var serviceAccount = fixture.GetResources<V1ServiceAccount>();
 
             statefulsets.Should().HaveCount(1);
             statefulsets.First().Metadata.Name.Should().Be(qdrantCluster.Metadata.Name);
 
-            service.Should().HaveCount(2);
+            services.Should().HaveCount(2);
+            clusterIp.Should().NotBeNull();
+            headless.Should().NotBeNull();
+            headless.Spec.ClusterIP.Should().Be("None");
 
             configMap.Should().HaveCount(1);
             configMap.First().Metadata.Name.Should().Be(qdrantCluster.Metadata.Name);
@@ -81,10 +86,8 @@ namespace Test_QdrantOperator
             serviceAccount.First().Metadata.Name.Should().Be(qdrantCluster.Metadata.Name);
         }
 
-        //[Fact] // waiting for bug fix in Neon.Operator.Xunit
-#pragma warning disable xUnit1013 // Public method should be marked as test
+        [Fact] // waiting for bug fix in Neon.Operator.Xunit
         public async Task TestFinalizeAsync()
-#pragma warning restore xUnit1013 // Public method should be marked as test
         {
             fixture.ClearResources();
 
@@ -144,8 +147,8 @@ namespace Test_QdrantOperator
             await finalizer.FinalizeAsync(qdrantCluster);
 
             fixture.GetResource<V1StatefulSet>(statefulSet.Metadata.Name, statefulSet.Metadata.NamespaceProperty).Should().BeNull();
-            //fixture.GetResource<V1Service>(service.Metadata.Name, service.Metadata.NamespaceProperty).Should().BeNull();
-            //fixture.GetResource<V1Service>(serviceHeadless.Metadata.Name, serviceHeadless.Metadata.NamespaceProperty).Should().BeNull();
+            fixture.GetResource<V1Service>(service.Metadata.Name, service.Metadata.NamespaceProperty).Should().BeNull();
+            fixture.GetResource<V1Service>(serviceHeadless.Metadata.Name, serviceHeadless.Metadata.NamespaceProperty).Should().BeNull();
             fixture.GetResource<V1ConfigMap>(configMap.Metadata.Name, configMap.Metadata.NamespaceProperty).Should().BeNull();
             fixture.GetResource<V1ServiceAccount>(serviceAccount.Metadata.Name, serviceAccount.Metadata.NamespaceProperty).Should().BeNull();
         }

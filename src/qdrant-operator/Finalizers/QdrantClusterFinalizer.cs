@@ -13,13 +13,13 @@ namespace QdrantOperator
 {
     public class QdrantClusterFinalizer : ResourceFinalizerBase<V1QdrantCluster>
     {
-        private readonly IKubernetes k8s;
+        private readonly IKubernetes                      k8s;
         private readonly ILogger<QdrantClusterController> logger;
         public QdrantClusterFinalizer(
-            IKubernetes k8s,
+            IKubernetes                      k8s,
             ILogger<QdrantClusterController> logger)
         {
-            this.k8s = k8s;
+            this.k8s    = k8s;
             this.logger = logger;
         }
 
@@ -27,23 +27,30 @@ namespace QdrantOperator
         {
             await SyncContext.Clear;
 
-            logger.LogInformation($"FINALIZED: {resource.Name()}");
+            using var activity = TraceContext.ActivitySource?.StartActivity();
 
             await DeleteStatefulsetAsync(resource);
             await DeleteServiceAsync(resource);
             await DeleteHeadlessServiceAsync(resource);
             await DeleteConfigMapAsync(resource);
             await DeleteServiceAccountAsync(resource);
+
+            logger.LogInformation($"FINALIZED: {resource.Name()}");
         }
 
         public async Task DeleteStatefulsetAsync(V1QdrantCluster resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             bool statefulsetExists = false;
             try
             {
                 await k8s.AppsV1.ReadNamespacedStatefulSetAsync(
-                    name: resource.Name(),
+                    name:               resource.Name(),
                     namespaceParameter: resource.Namespace());
+
                 statefulsetExists = true;
             }
             catch (Exception)
@@ -54,19 +61,24 @@ namespace QdrantOperator
             if (statefulsetExists)
             {
                 await k8s.AppsV1.DeleteNamespacedStatefulSetAsync(
-                        name: resource.Name(),
-                        namespaceParameter: resource.Namespace());
+                    name:               resource.Name(),
+                    namespaceParameter: resource.Namespace());
             }
 
         }
         public async Task DeleteServiceAsync(V1QdrantCluster resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             bool serviceExists = false;
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAsync(
-                    name: resource.Name(),
+                    name:               resource.Name(),
                     namespaceParameter: resource.Namespace());
+
                 serviceExists = true;
             }
             catch (Exception)
@@ -77,19 +89,24 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAsync(
-                        name: resource.Name(),
-                        namespaceParameter: resource.Namespace());
+                    name:               resource.Name(),
+                    namespaceParameter: resource.Namespace());
             }
 
         }
         public async Task DeleteHeadlessServiceAsync(V1QdrantCluster resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             bool serviceExists = false;
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAsync(
-                    name: resource.Name(),
+                    name:               Constants.HeadlessServiceName(resource.Name()),
                     namespaceParameter: resource.Namespace());
+
                 serviceExists = true;
             }
             catch (Exception)
@@ -100,19 +117,24 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAsync(
-                        name: resource.Name(),
-                        namespaceParameter: resource.Namespace());
+                    name:               Constants.HeadlessServiceName(resource.Name()),
+                    namespaceParameter: resource.Namespace());
             }
 
         }
         public async Task DeleteConfigMapAsync(V1QdrantCluster resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             bool configMapExists = false;
             try
             {
                 await k8s.CoreV1.ReadNamespacedConfigMapAsync(
-                    name: resource.Name(),
+                    name:               resource.Name(),
                     namespaceParameter: resource.Namespace());
+
                 configMapExists = true;
             }
             catch (Exception)
@@ -123,19 +145,24 @@ namespace QdrantOperator
             if (configMapExists)
             {
                 await k8s.CoreV1.DeleteNamespacedConfigMapAsync(
-                        name: resource.Name(),
-                        namespaceParameter: resource.Namespace());
+                    name:               resource.Name(),
+                    namespaceParameter: resource.Namespace());
             }
 
         }
         public async Task DeleteServiceAccountAsync(V1QdrantCluster resource)
         {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
             bool serviceExists = false;
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAccountAsync(
-                    name: resource.Name(),
+                    name:               resource.Name(),
                     namespaceParameter: resource.Namespace());
+
                 serviceExists = true;
             }
             catch (Exception)
@@ -146,13 +173,10 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAccountAsync(
-                        name: resource.Name(),
-                        namespaceParameter: resource.Namespace());
+                    name:               resource.Name(),
+                    namespaceParameter: resource.Namespace());
             }
 
         }
-
-
     }
 }
-
