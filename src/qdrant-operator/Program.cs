@@ -4,27 +4,25 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Neon.Operator;
+
 namespace QdrantOperator
 {
     public static partial class Program
     {
         public static async Task Main(string[] args)
         {
-            var host =
-                Host.CreateDefaultBuilder(args)
-               .ConfigureWebHostDefaults(webBuilder =>
+            var host = KubernetesOperatorHost
+               .CreateDefaultBuilder()
+               .ConfigureOperator(settings =>
                {
-                   webBuilder.UseStartup<OperatorStartup>();
-               });
+                   settings.AssemblyScanningEnabled = false;
+                   settings.Name                    = "qdrant-operator";
+               })
+               .UseStartup<OperatorStartup>()
+               .Build();
 
-            host.ConfigureLogging(
-                logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-                });
-
-            await host.Build().RunAsync();
+            await host.RunAsync();
         }
     }
 }

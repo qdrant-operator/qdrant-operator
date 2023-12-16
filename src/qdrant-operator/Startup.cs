@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Neon.Operator;
 
@@ -17,8 +18,13 @@ namespace QdrantOperator
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddLogging()
-                .AddKubernetesOperator();
+            services.AddSingleton<ILoggerFactory>(LoggerFactory.Create(options =>
+                {
+                    options.ClearProviders();
+                    options.AddJsonConsole();
+                }));
+            services.AddLogging();
+            services.AddKubernetesOperator();
         }
 
         public void Configure(IApplicationBuilder app)

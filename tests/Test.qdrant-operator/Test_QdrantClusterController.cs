@@ -60,6 +60,7 @@ namespace Test_QdrantOperator
                     }
                 }
             };
+
             await controller.ReconcileAsync(qdrantCluster);
 
             // verify result

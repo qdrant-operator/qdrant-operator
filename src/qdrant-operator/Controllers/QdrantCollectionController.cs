@@ -24,11 +24,13 @@ using QdrantOperator.Extensions;
 namespace QdrantOperator
 {
     [RbacRule<V1QdrantCollection>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantCollectionController : ResourceControllerBase<V1QdrantCollection>
     {
-        private readonly IKubernetes k8s;
+        private readonly IKubernetes                           k8s;
         private readonly IFinalizerManager<V1QdrantCollection> finalizerManager;
-        private readonly ILogger<QdrantCollectionController> logger;
+        private readonly ILogger<QdrantCollectionController>   logger;
 
         public QdrantCollectionController(
             IKubernetes k8s,
