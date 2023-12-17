@@ -1,5 +1,12 @@
+<p style="text-align:center;" align="center">
+  <img src="https://github.com/qdrant-operator/qdrant-operator/assets/11889627/b10e2e8e-ac37-416b-a7ed-64f7f2ac27b9" width="175" height="175"/></a>  
+</p>
+
 # Qdrant Operator for Kubernetes
+
+
 [![.NET](https://github.com/qdrant-operator/qdrant-operator/actions/workflows/main.yml/badge.svg)](https://github.com/qdrant-operator/qdrant-operator/actions/workflows/main.yml)
+
 ## Introduction
 The Qdrant Operator for Kubernetes is an operator for managing Qdrant Clusters in a Kubernetes Cluster. 
 
@@ -26,7 +33,6 @@ spec:
     size: 1Gi
     storageClassName: default
   replicas: 1
-  serviceMonitors: false
 ```
 
 You can also add Collections to the Cluster by adding a QdrantCollection resource:
@@ -38,7 +44,6 @@ metadata:
 spec:
   cluster: my-cluster
   replicationFactor: 1
-  shardNumber: 4
   vectorSpec:
     size: 5
     onDisk: true
