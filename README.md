@@ -2,6 +2,8 @@
   <img src="https://github.com/qdrant-operator/qdrant-operator/assets/11889627/b10e2e8e-ac37-416b-a7ed-64f7f2ac27b9" width="175" height="175"/></a>  
 </p>
 
+⚠️ UNDER ACTIVE DEVELOPMENT
+
 # Qdrant Operator for Kubernetes
 
 
@@ -54,3 +56,5 @@ spec:
 For any questions, please join our Slack channel:
 
 [![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://communityinviter.com/apps/qdrantoperator/invite)
+
+This project is not affiliated with [Qdrant](https://qdrant.tech/)
