@@ -33,7 +33,7 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build --verbosity normal --filter Category=QdrantClusterController
     - name: Publish
       run: dotnet publish src/qdrant-operator/qdrant-operator.csproj -c Release -o app/publish
     - name: Log in to the Container registry

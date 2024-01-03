@@ -16,6 +16,7 @@ namespace Test_QdrantOperator
 {
     [Collection("Test_QdrantClusterController")]
     [CollectionDefinition("Test_QdrantClusterController", DisableParallelization = true)]
+    [Trait("Category", "QdrantClusterController")]
     public class Test_QdrantClusterController : IClassFixture<TestOperatorFixture>
     {
         private TestOperatorFixture fixture;
