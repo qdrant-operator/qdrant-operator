@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using k8s;
@@ -8,11 +10,13 @@ using Microsoft.Extensions.Logging;
 
 using Neon.Common;
 using Neon.Diagnostics;
+using Neon.K8s;
 using Neon.Operator;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
 using Neon.Operator.Rbac;
+using Neon.Operator.Util;
 using Neon.Tasks;
 
 namespace QdrantOperator
@@ -22,6 +26,7 @@ namespace QdrantOperator
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1PersistentVolumeClaim>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantClusterController : ResourceControllerBase<V1QdrantCluster>
     {
@@ -44,7 +49,24 @@ namespace QdrantOperator
             await SyncContext.Clear;
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
+            
+            await ReconcileInternalAsync(resource);
 
+            await WaitForReplicasAsync(resource);
+
+            await CheckVolumesAsync(resource);
+
+            logger.LogInformationEx(() => $"RECONCILED: {resource.Name()}");
+
+            return ResourceControllerResult.Ok();
+        }
+
+        internal async Task ReconcileInternalAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+            
             logger.LogInformation($"RECONCILING: {resource.Name()}");
 
             labels = new Dictionary<string, string>();
@@ -69,12 +91,36 @@ namespace QdrantOperator
                 UpsertServiceAccountAsync(resource)
             };
 
-
             await NeonHelper.WaitAllAsync(tasks);
+        }
 
-            logger.LogInformationEx(() => $"RECONCILED: {resource.Name()}");
+        public async Task CheckVolumesAsync(V1QdrantCluster resource)
+        {
+            for (int i = 0; i < resource.Spec.Replicas; i++)
+            {
+                var volumeName = $"{Constants.QdrantStorage}-{resource.Name()}-{i}";
+                var pvc = await k8s.CoreV1.ReadNamespacedPersistentVolumeClaimAsync(volumeName,resource.Namespace());
 
-            return ResourceControllerResult.Ok();
+                if (pvc.Spec.Resources.Requests["storage"].Value == resource.Spec.Persistence.Size)
+                {
+                    continue;
+                }
+
+                pvc.Spec.Resources = new V1ResourceRequirements()
+                {
+                    Requests = new Dictionary<string, ResourceQuantity>()
+                    {
+                        { "storage", new ResourceQuantity(resource.Spec.Persistence.Size) }
+                    }
+                };
+
+                await k8s.CoreV1.ReplaceNamespacedPersistentVolumeClaimAsync(
+                    body: pvc,
+                    name: volumeName,
+                    namespaceParameter: resource.Namespace());
+
+
+            }
         }
         public async Task UpsertStatefulsetAsync(V1QdrantCluster resource)
         {
@@ -103,7 +149,7 @@ namespace QdrantOperator
                 statefulSet.AddOwnerReference(resource.MakeOwnerReference());
             }
 
-            statefulSet.Spec = new V1StatefulSetSpec()
+            var spec = new V1StatefulSetSpec()
             {
                 Replicas = resource.Spec.Replicas,
                 Selector = new V1LabelSelector()
@@ -288,7 +334,16 @@ namespace QdrantOperator
                         SchedulerName = "default-scheduler"
                     }
                 },
-                VolumeClaimTemplates = new List<V1PersistentVolumeClaim>()
+                ServiceName          = Constants.HeadlessServiceName(resource.Metadata.Name)
+            };
+
+            if (exists)
+            {
+                spec.VolumeClaimTemplates = statefulSet.Spec.VolumeClaimTemplates;
+            }
+            else
+            {
+                spec.VolumeClaimTemplates = new List<V1PersistentVolumeClaim>()
                 {
                     new V1PersistentVolumeClaim()
                     {
@@ -314,11 +369,12 @@ namespace QdrantOperator
                             StorageClassName = resource.Spec.Persistence.StorageClassName,
                             VolumeMode       = "Filesystem"
                         }
-                           
+
                     }
-                },
-                ServiceName          = Constants.HeadlessServiceName(resource.Metadata.Name)
-            };
+                };
+            }
+
+            statefulSet.Spec = spec;
 
             if (exists)
             {
@@ -574,6 +630,31 @@ service:
             }
 
             return spec;
+        }
+
+        private async Task WaitForReplicasAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            // Start the watcher.
+
+            var cts = new CancellationTokenSource();
+
+            await k8s.WatchAsync<V1StatefulSet>(
+                async (@event) =>
+                {
+                    await SyncContext.Clear;
+
+                    if (@event.Value.Status.Replicas == @event.Value.Status.AvailableReplicas)
+                    {
+                        cts.Cancel();
+                    }
+                },
+                namespaceParameter: resource.Namespace(),
+                fieldSelector: $"metadata.name={resource.Name()}",
+                retryDelay: TimeSpan.FromSeconds(30),
+                logger: logger,
+                cancellationToken: cts.Token);
         }
     }
 

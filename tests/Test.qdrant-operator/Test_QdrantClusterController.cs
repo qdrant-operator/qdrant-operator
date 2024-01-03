@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +27,7 @@ namespace Test_QdrantOperator
             fixture.Operator.AddFinalizer<QdrantClusterFinalizer>();
             fixture.RegisterType<V1ConfigMap>();
             fixture.RegisterType<V1Service>();
+            fixture.RegisterType<V1PersistentVolumeClaim>();
             fixture.RegisterType<V1ServiceAccount>();
             fixture.RegisterType<V1StatefulSet>();
             fixture.Start();
@@ -60,8 +62,7 @@ namespace Test_QdrantOperator
                     }
                 }
             };
-
-            await controller.ReconcileAsync(qdrantCluster);
+            await controller.ReconcileInternalAsync(qdrantCluster);
 
             // verify result
             var statefulsets   = fixture.GetResources<V1StatefulSet>();
@@ -86,7 +87,69 @@ namespace Test_QdrantOperator
             serviceAccount.First().Metadata.Name.Should().Be(qdrantCluster.Metadata.Name);
         }
 
-        [Fact] // waiting for bug fix in Neon.Operator.Xunit
+        [Fact]
+        public async Task TestUpdateVolumePersistence()
+        {
+            fixture.ClearResources();
+
+            var controller = fixture.Operator.GetController<QdrantClusterController>();
+
+            var qdrantCluster = new V1QdrantCluster()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "test",
+                    NamespaceProperty = "test",
+                },
+                Spec = new V1QdrantCluster.V1QdrantClusterSpec()
+                {
+                    Image = new ImageSpec()
+                    {
+                        PullPolicy = "Always",
+                        Repository = "test/image",
+                        Tag = "not-latest"
+                    },
+                    Persistence = new PersistenceSpec()
+                    {
+                        Size = "9999Gi",
+                        StorageClassName = "test-storage-class"
+                    },
+                    Replicas = 3
+                }
+            };
+            await controller.ReconcileInternalAsync(qdrantCluster);
+
+            for (int i = 0; i < qdrantCluster.Spec.Replicas; i++)
+            {
+                var pvc = new V1PersistentVolumeClaim().Initialize();
+                pvc.Metadata.Name = $"{Constants.QdrantStorage}-{qdrantCluster.Name()}-{i}";
+                pvc.Metadata.NamespaceProperty = qdrantCluster.Metadata.NamespaceProperty;
+                pvc.Spec = new V1PersistentVolumeClaimSpec()
+                {
+                    Resources = new V1ResourceRequirements()
+                    {
+                        Requests = new Dictionary<string, ResourceQuantity>()
+                        {
+                            { "storage", new ResourceQuantity(qdrantCluster.Spec.Persistence.Size) }
+                        }
+                    }
+                };
+                fixture.Resources.Add(pvc);
+            }
+            // verify result
+            var statefulsets = fixture.Resources.OfType<V1StatefulSet>();
+
+            statefulsets.Should().HaveCount(1);
+            statefulsets.First().Metadata.Name.Should().Be(qdrantCluster.Metadata.Name);
+
+            qdrantCluster.Spec.Persistence.Size = "100Gi";
+            await controller.CheckVolumesAsync(qdrantCluster);
+
+            var volumes = fixture.GetResources<V1PersistentVolumeClaim>();
+            volumes.First().Spec.Resources.Requests["storage"].Value.Should().Be("100Gi");
+        }
+
+        [Fact]
         public async Task TestFinalizeAsync()
         {
             fixture.ClearResources();

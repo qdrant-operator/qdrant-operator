@@ -20,11 +20,11 @@ namespace QdrantOperator
     {
         private readonly IKubernetes                         k8s;
         private readonly ILogger<QdrantCollectionController> logger;
-        private readonly ILoggerFactory                      loggerFactory;
+        private readonly ILoggerFactory?                     loggerFactory;
         public QdrantCollectionFinalizer(
             IKubernetes                         k8s,
             ILogger<QdrantCollectionController> logger,
-            ILoggerFactory                      loggerFactory)
+            ILoggerFactory?                     loggerFactory)
         {
             this.k8s           = k8s;
             this.logger        = logger;

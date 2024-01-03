@@ -59,5 +59,43 @@ namespace QdrantOperator.Extensions
                     throw new ArgumentException("Unknown value");
             }
         }
+
+        public static Qdrant.Client.Grpc.TokenizerType ToGrpcTokenizer(this Models.TokenizerType value)
+        {
+            switch (value)
+            {
+                case Models.TokenizerType.Prefix:
+                    return Qdrant.Client.Grpc.TokenizerType.Prefix;
+                case Models.TokenizerType.Word:
+                    return Qdrant.Client.Grpc.TokenizerType.Word;
+                case Models.TokenizerType.WhiteSpace:
+                    return Qdrant.Client.Grpc.TokenizerType.Whitespace;
+                case Models.TokenizerType.Multilingual:
+                    return Qdrant.Client.Grpc.TokenizerType.Multilingual;
+                default:
+                    throw new ArgumentException("Unknown value");
+            }
+        }
+        public static Qdrant.Client.Grpc.PayloadSchemaType ToGrpcType(this Models.PayloadSchemaType value)
+        {
+            switch (value)
+            {
+                case Models.PayloadSchemaType.Bool:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Bool;
+                case Models.PayloadSchemaType.Float:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Float;
+                case Models.PayloadSchemaType.Keyword:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Keyword;
+                case Models.PayloadSchemaType.Text:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Text;
+                case Models.PayloadSchemaType.Integer:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Integer;
+                case Models.PayloadSchemaType.Geo:
+                    return Qdrant.Client.Grpc.PayloadSchemaType.Geo;
+                default:
+                    throw new ArgumentException("Unknown value");
+            }
+        }
+
     }
 }

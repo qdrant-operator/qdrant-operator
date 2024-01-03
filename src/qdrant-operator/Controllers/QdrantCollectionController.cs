@@ -39,7 +39,7 @@ namespace QdrantOperator
             IKubernetes                           k8s,
             IFinalizerManager<V1QdrantCollection> finalizerManager,
             ILogger<QdrantCollectionController>   logger,
-            ILoggerFactory                        loggerFactory)
+            ILoggerFactory?                       loggerFactory)
         {
             this.k8s              = k8s;
             this.finalizerManager = finalizerManager;
@@ -207,6 +207,7 @@ namespace QdrantOperator
 
                             map.Map.Add(item.Key, vectorParams);
                         }
+                       
 
                         await qdrantClient.UpdateCollectionAsync(
                             collectionName:      resource.Metadata.Name,
