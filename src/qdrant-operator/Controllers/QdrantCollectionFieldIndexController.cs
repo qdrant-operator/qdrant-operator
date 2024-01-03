@@ -23,7 +23,7 @@ using QdrantOperator.Extensions;
 
 namespace QdrantOperator
 {
-    [RbacRule<V1QdrantCollectionFieldIndex>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1QdrantCollectionFieldIndex>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     public class QdrantCollectionFieldIndexController : ResourceControllerBase<V1QdrantCollectionFieldIndex>
     {
         private readonly IKubernetes k8s;
