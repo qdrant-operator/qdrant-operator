@@ -7,6 +7,8 @@ rules:
   - ""
   resources:
   - configmaps
+  - persistentvolumeclaims
+  - persistentvolumeclaims/status
   - serviceaccounts
   - services
   verbs:
@@ -36,6 +38,7 @@ rules:
   resources:
   - qdrantclusters
   - qdrantclusters/status
+  - qdrantcollectionfieldindexes
   - qdrantcollections
   - qdrantcollections/status
   verbs:

@@ -1,0 +1,53 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: qdrantcollectionfieldindexes.qdrant.io
+spec:
+  group: qdrant.io
+  names:
+    kind: QdrantCollectionFieldIndex
+    plural: qdrantcollectionfieldindexes
+    shortNames: []
+    singular: qdrantcollectionfieldindex
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns: []
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        properties:
+          spec:
+            properties:
+              cluster:
+                type: string
+              collection:
+                type: string
+              fieldName:
+                type: string
+              type:
+                type: string
+              textIndexType:
+                properties:
+                  tokenizer:
+                    type: string
+                  minTokenLen:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  maxTokenLen:
+                    exclusiveMinimum: false
+                    format: int32
+                    minimum: 0.0
+                    type: integer
+                  loweracase:
+                    type: boolean
+                type: object
+            required:
+            - fieldName
+            - type
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources: {}
