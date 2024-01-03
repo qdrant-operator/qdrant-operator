@@ -51,6 +51,24 @@ spec:
     onDisk: true
 ```
 
+You can also add Field Index to a colection by adding a QdrantCollectionFieldIndex resource:
+```yaml
+apiVersion: qdrant.io/v1alpha1
+kind: QdrantCollectionFieldIndex
+metadata:
+  name: my-collection-field-index
+spec:
+  cluster: my-cluster
+  collection: my-collection
+  fieldName: my-field
+  type: Text
+  textIndexType:
+    tokenizer: Word
+    minTokenLen: 1
+    maxTokenLen: 10
+    loweracase: true
+```
+
 ## More Information
 
 For any questions, please join our Slack channel:

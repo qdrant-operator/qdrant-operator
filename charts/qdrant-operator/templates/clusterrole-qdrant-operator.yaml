@@ -38,6 +38,7 @@ rules:
   resources:
   - qdrantclusters
   - qdrantclusters/status
+  - qdrantcollectionfieldindexes
   - qdrantcollections
   - qdrantcollections/status
   verbs:
