@@ -16,8 +16,9 @@ using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
 using Neon.Operator.Rbac;
-using Neon.Operator.Util;
 using Neon.Tasks;
+
+using QdrantOperator.Entities;
 
 namespace QdrantOperator
 {
@@ -70,14 +71,14 @@ namespace QdrantOperator
             logger.LogInformation($"RECONCILING: {resource.Name()}");
 
             labels = new Dictionary<string, string>();
-            labels.Add("app", resource.Metadata.Name);
+            labels.Add("app", resource.GetFullName());
             labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
             labels.Add("app.kubernetes.io/name", resource.Metadata.Name);
             labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
             labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
 
             labels = new Dictionary<string, string>();
-            labels.Add("app", resource.Metadata.Name);
+            labels.Add("app", resource.GetFullName());
             labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
             labels.Add("app.kubernetes.io/name", resource.Metadata.Name);
             labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
@@ -98,7 +99,7 @@ namespace QdrantOperator
         {
             for (int i = 0; i < resource.Spec.Replicas; i++)
             {
-                var volumeName = $"{Constants.QdrantStorage}-{resource.Name()}-{i}";
+                var volumeName = $"{Constants.QdrantStorage}-{resource.GetFullName()}-{i}";
                 var pvc = await k8s.CoreV1.ReadNamespacedPersistentVolumeClaimAsync(volumeName,resource.Namespace());
 
                 if (pvc.Spec.Resources.Requests["storage"].Value == resource.Spec.Persistence.Size)
@@ -130,20 +131,20 @@ namespace QdrantOperator
 
             var statefulsetList = await k8s.AppsV1.ListNamespacedStatefulSetAsync(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}");
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
 
             V1StatefulSet statefulSet;
             bool exists = false;
             if (statefulsetList.Items.Count > 0)
             {
-                logger.LogInformationEx(() => $"StatefulSet for {resource.Name()}/Qdrant exists, updating existing StatefulSet.");
+                logger.LogInformationEx(() => $"StatefulSet for {resource.GetFullName()}/Qdrant exists, updating existing StatefulSet.");
                 exists      = true;
                 statefulSet = statefulsetList.Items[0];
             }
             else
             {
                 statefulSet = new V1StatefulSet().Initialize();
-                statefulSet.Metadata.Name = resource.Name();
+                statefulSet.Metadata.Name = resource.GetFullName();
                 statefulSet.Metadata.SetNamespace(resource.Namespace());
                 statefulSet.Metadata.Labels = labels;
                 statefulSet.AddOwnerReference(resource.MakeOwnerReference());
@@ -171,7 +172,7 @@ namespace QdrantOperator
                                 Name = Constants.QdrantConfig,
                                 ConfigMap = new V1ConfigMapVolumeSource()
                                 {
-                                    Name        = resource.Metadata.Name,
+                                    Name        = resource.GetFullName(),
                                     DefaultMode = 493
                                 }
 
@@ -324,8 +325,8 @@ namespace QdrantOperator
                         RestartPolicy                 = "Always",
                         TerminationGracePeriodSeconds = 30,
                         DnsPolicy                     = "ClusterFirst",
-                        ServiceAccountName            = resource.Metadata.Name,
-                        ServiceAccount                = resource.Metadata.Name,
+                        ServiceAccountName            = resource.GetFullName(),
+                        ServiceAccount                = resource.GetFullName(),
                         SecurityContext               = new V1PodSecurityContext()
                         {
                             FsGroup             = 3000,
@@ -334,7 +335,7 @@ namespace QdrantOperator
                         SchedulerName = "default-scheduler"
                     }
                 },
-                ServiceName          = Constants.HeadlessServiceName(resource.Metadata.Name)
+                ServiceName          = Constants.HeadlessServiceName(resource.GetFullName())
             };
 
             if (exists)
@@ -400,25 +401,25 @@ namespace QdrantOperator
 
             var serviceList = await k8s.CoreV1.ListNamespacedServiceAsync(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}");
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
 
             V1Service service;
             bool exists = false;
             if (serviceList.Items.Count > 0)
             {
-                logger.LogInformationEx(() => $"Service for {resource.Name()}/Qdrant exists, updating existing Service.");
+                logger.LogInformationEx(() => $"Service for {resource.GetFullName()}/Qdrant exists, updating existing Service.");
                 exists  = true;
                 service = serviceList.Items[0];
             }
             else
             {
                 service = new V1Service().Initialize();
-                service.Metadata.Name = resource.Name();
+                service.Metadata.Name = resource.GetFullName();
                 service.Metadata.SetNamespace(resource.Namespace());
                 service.Metadata.Labels = labels;
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
-            service.Spec = CreateServiceSpec(resource.Metadata.Name, false);
+            service.Spec = CreateServiceSpec(resource.GetFullName(), false);
 
             if (exists)
             {
@@ -444,25 +445,25 @@ namespace QdrantOperator
 
             var serviceList = await k8s.CoreV1.ListNamespacedServiceAsync(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}");
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
 
             V1Service service;
             bool exists = false;
             if (serviceList.Items.Count > 0)
             {
-                logger.LogInformationEx(() => $"Service for {resource.Name()}/Qdrant exists, updating existing Service.");
+                logger.LogInformationEx(() => $"Service for {resource.GetFullName()}/Qdrant exists, updating existing Service.");
                 exists  = true;
                 service = serviceList.Items[0];
             }
             else
             {
                 service = new V1Service().Initialize();
-                service.Metadata.Name = Constants.HeadlessServiceName(resource.Metadata.Name);
+                service.Metadata.Name = Constants.HeadlessServiceName(resource.GetFullName());
                 service.Metadata.SetNamespace(resource.Namespace());
                 service.Metadata.Labels = labels;
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
-            service.Spec = CreateServiceSpec(resource.Metadata.Name, true);
+            service.Spec = CreateServiceSpec(resource.GetFullName(), true);
 
             if (exists)
             {
@@ -489,20 +490,20 @@ namespace QdrantOperator
 
             var configMapList = await k8s.CoreV1.ListNamespacedConfigMapAsync(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}");
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
 
             V1ConfigMap configMap;
             bool exists = false;
             if (configMapList.Items.Count > 0)
             {
-                logger.LogInformationEx(() => $"ConfigMap for {resource.Name()}/Qdrant exists, updating existing ConfigMap.");
+                logger.LogInformationEx(() => $"ConfigMap for {resource.GetFullName()}/Qdrant exists, updating existing ConfigMap.");
                 exists    = true;
                 configMap = configMapList.Items[0];
             }
             else
             {
                 configMap = new V1ConfigMap().Initialize();
-                configMap.Metadata.Name = resource.Metadata.Name;
+                configMap.Metadata.Name = resource.GetFullName();
                 configMap.Metadata.SetNamespace(resource.Namespace());
                 configMap.Metadata.Labels = labels;
                 configMap.AddOwnerReference(resource.MakeOwnerReference());
@@ -515,9 +516,9 @@ $@"#!/bin/sh
 SET_INDEX=${{HOSTNAME##*-}}
 echo ""Starting initializing for pod $SET_INDEX""
 if [ ""$SET_INDEX"" = ""0"" ]; then
-    exec ./entrypoint.sh --uri 'http://{resource.Metadata.Name}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}'
+    exec ./entrypoint.sh --uri 'http://{resource.GetFullName()}-0.{Constants.HeadlessServiceName(resource.GetFullName())}:{Constants.P2pPort}'
 else
-    exec ./entrypoint.sh --bootstrap 'http://{resource.Metadata.Name}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}' --uri 'http://{resource.Metadata.Name}-'""$SET_INDEX""'.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}'
+    exec ./entrypoint.sh --bootstrap 'http://{resource.GetFullName()}-0.{Constants.HeadlessServiceName(resource.GetFullName())}:{Constants.P2pPort}' --uri 'http://{resource.GetFullName()}-'""$SET_INDEX""'.{Constants.HeadlessServiceName(resource.GetFullName())}:{Constants.P2pPort}'
 fi".Replace("\r\n", "\n"));
             configData.Add("production.yaml", 
 $@"cluster:
@@ -554,21 +555,21 @@ service:
 
             var serviceAccountList = await k8s.CoreV1.ListNamespacedServiceAccountAsync(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}");
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
 
             V1ServiceAccount serviceAccount;
             bool exists = false;
 
             if (serviceAccountList.Items.Count > 0)
             {
-                logger.LogInformationEx(() => $"Service Account for {resource.Name()}/Qdrant exists, updating existing Service Account.");
+                logger.LogInformationEx(() => $"Service Account for {resource.GetFullName()}/Qdrant exists, updating existing Service Account.");
                 exists         = true;
                 serviceAccount = serviceAccountList.Items[0];
             }
             else
             {
                 serviceAccount = new V1ServiceAccount().Initialize();
-                serviceAccount.Metadata.Name = resource.Name();
+                serviceAccount.Metadata.Name = resource.GetFullName();
                 serviceAccount.Metadata.SetNamespace(resource.Namespace());
                 serviceAccount.Metadata.Labels = labels;
                 serviceAccount.AddOwnerReference(resource.MakeOwnerReference());
@@ -653,7 +654,7 @@ service:
                     }
                 },
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.Name()}",
+                fieldSelector:      $"metadata.name={resource.GetFullName()}",
                 retryDelay:         TimeSpan.FromSeconds(30),
                 logger:             logger,
                 cancellationToken:  cts.Token);
