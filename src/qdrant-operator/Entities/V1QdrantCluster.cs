@@ -53,13 +53,13 @@ namespace QdrantOperator
 
         public class V1QdrantClusterSpec
         {
-            public ImageSpec Image { get; set; }
+            public ImageSpec Image { get; set; } = new ImageSpec();
 
-            public PersistenceSpec Persistence { get; set; }
+            public PersistenceSpec Persistence { get; set; } = new PersistenceSpec();
             
             [DefaultValue(1)]
             public int Replicas { get; set; } = 1;
-            public MetricsOptions Metrics { get; set; }
+            public MetricsOptions Metrics { get; set; } = new MetricsOptions();
             public Dictionary<string, string> NodeSelector { get; set; }
         }
 
