@@ -20,14 +20,14 @@
     <ItemGroup>
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
         <PackageReference Include="Neon.Common" Version="4.0.0-rc.7" />
-        <PackageReference Include="Neon.Operator" Version="1.0.0-beta.17" />
+        <PackageReference Include="Neon.Operator" Version="1.0.0-beta.18" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
-        <PackageReference Include="prometheus-net" Version="8.2.0" />
+        <PackageReference Include="prometheus-net" Version="8.2.1" />
         <PackageReference Include="Qdrant.Client" Version="1.7.0" />
     </ItemGroup>
 </Project>

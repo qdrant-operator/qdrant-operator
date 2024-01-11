@@ -59,9 +59,7 @@ namespace QdrantOperator
             
             [DefaultValue(1)]
             public int Replicas { get; set; } = 1;
-
-            [DefaultValue(false)]
-            public bool ServiceMonitors { get; set; } = false;
+            public MetricsOptions Metrics { get; set; }
             public Dictionary<string, string> NodeSelector { get; set; }
         }
 

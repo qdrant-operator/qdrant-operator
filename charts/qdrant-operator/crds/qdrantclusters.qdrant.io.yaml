@@ -37,8 +37,17 @@ spec:
               replicas:
                 format: int32
                 type: integer
-              serviceMonitors:
-                type: boolean
+              metrics:
+                properties:
+                  serviceMonitorEnabled:
+                    type: boolean
+                  interval:
+                    type: string
+                  scrapeTimeout:
+                    type: string
+                  honorLabels:
+                    type: boolean
+                type: object
               nodeSelector:
                 items:
                   properties:

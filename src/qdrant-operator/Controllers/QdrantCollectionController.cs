@@ -21,6 +21,7 @@ using Neon.Tasks;
 using Qdrant.Client;
 using Qdrant.Client.Grpc;
 
+using QdrantOperator.Entities;
 using QdrantOperator.Extensions;
 
 namespace QdrantOperator
@@ -65,7 +66,7 @@ namespace QdrantOperator
 
             var cluster = clusters.First();
 
-            var clusterHost = $"{cluster.Metadata.Name}.{resource.Metadata.NamespaceProperty}";
+            var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
             var clusterPort = 6334;
 
             logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");

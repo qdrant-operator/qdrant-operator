@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,12 +12,11 @@ using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
 using Neon.Operator.Rbac;
-using Neon.Operator.Util;
 using Neon.Tasks;
 
 using Qdrant.Client;
-using Qdrant.Client.Grpc;
 
+using QdrantOperator.Entities;
 using QdrantOperator.Extensions;
 
 namespace QdrantOperator
@@ -53,7 +51,7 @@ namespace QdrantOperator
 
             var cluster = clusters.First();
             var qdrantClient = new QdrantClient(
-                host:  $"{cluster.Metadata.Name}.{cluster.Metadata.NamespaceProperty}",
+                host:  $"{cluster.GetFullName()}.{cluster.Metadata.NamespaceProperty}",
                 port:  6334,
                 https: false);
 

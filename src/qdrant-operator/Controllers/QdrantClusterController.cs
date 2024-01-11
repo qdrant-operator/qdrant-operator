@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
+using Neon.K8s.Resources.Prometheus;
 using Neon.Operator;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
@@ -91,6 +92,11 @@ namespace QdrantOperator
                 UpsertConfigMapAsync(resource),
                 UpsertServiceAccountAsync(resource)
             };
+
+            if (resource.Spec.Metrics.ServiceMonitorEnabled)
+            {
+                tasks.Add(UpsertServiceMonitorAsync(resource));
+            }
 
             await NeonHelper.WaitAllAsync(tasks);
         }
@@ -588,6 +594,57 @@ service:
                     body:               serviceAccount,
                     namespaceParameter: serviceAccount.Metadata.NamespaceProperty);
             }
+        }
+
+        public async Task UpsertServiceMonitorAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            var serviceMonitorList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1ServiceMonitor>(
+                namespaceParameter: resource.Namespace(),
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
+
+            V1ServiceMonitor serviceMonitor;
+
+            if (serviceMonitorList.Items.Count > 0)
+            {
+                logger.LogInformationEx(() => $"ServiceMonitor for {resource.GetFullName()}/Qdrant exists, updating existing ServiceMonitor.");
+                serviceMonitor = serviceMonitorList.Items[0];
+            }
+            else
+            {
+                serviceMonitor = new V1ServiceMonitor().Initialize();
+                serviceMonitor.Metadata.Name = resource.GetFullName();
+                serviceMonitor.Metadata.SetNamespace(resource.Namespace());
+                serviceMonitor.Metadata.Labels = labels;
+                serviceMonitor.AddOwnerReference(resource.MakeOwnerReference());
+            }
+
+            serviceMonitor.Spec = new V1ServiceMonitorSpec();
+            serviceMonitor.Spec.Endpoints = new List<Endpoint>()
+            {
+                new Endpoint()
+                {
+                    Interval      = resource.Spec.Metrics.Interval,
+                    Path          = "/metrics",
+                    Port          = Constants.HttpPortName,
+                    Scheme        = "http",
+                    HonorLabels   = resource.Spec.Metrics.HonorLabels,
+                    ScrapeTimeout = resource.Spec.Metrics.ScrapeTimeout,
+                }
+            };
+            serviceMonitor.Spec.Selector = new V1LabelSelector()
+            {
+                MatchLabels = labels
+            };
+
+
+            await k8s.CustomObjects.UpsertNamespacedCustomObjectAsync(
+                   body:               serviceMonitor,
+                   name:               serviceMonitor.Name(),
+                   namespaceParameter: serviceMonitor.Metadata.NamespaceProperty);
         }
 
         public V1ServiceSpec CreateServiceSpec(string selectorName, bool headless = false)

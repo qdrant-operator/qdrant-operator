@@ -7,8 +7,12 @@ using k8s.Models;
 using Microsoft.Extensions.Logging;
 
 using Neon.Diagnostics;
+using Neon.K8s;
+using Neon.K8s.Resources.Prometheus;
 using Neon.Operator.Finalizers;
 using Neon.Tasks;
+
+using QdrantOperator.Entities;
 
 namespace QdrantOperator
 {
@@ -35,6 +39,7 @@ namespace QdrantOperator
             await DeleteHeadlessServiceAsync(resource);
             await DeleteConfigMapAsync(resource);
             await DeleteServiceAccountAsync(resource);
+            await DeleteServiceMonitorAsync(resource);
 
             logger.LogInformationEx(() => $"FINALIZED: {resource.Name()}");
         }
@@ -49,7 +54,7 @@ namespace QdrantOperator
             try
             {
                 await k8s.AppsV1.ReadNamespacedStatefulSetAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
 
                 statefulsetExists = true;
@@ -62,7 +67,7 @@ namespace QdrantOperator
             if (statefulsetExists)
             {
                 await k8s.AppsV1.DeleteNamespacedStatefulSetAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
             }
 
@@ -77,7 +82,7 @@ namespace QdrantOperator
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
 
                 serviceExists = true;
@@ -90,7 +95,7 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
             }
 
@@ -105,7 +110,7 @@ namespace QdrantOperator
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAsync(
-                    name:               Constants.HeadlessServiceName(resource.Name()),
+                    name:               Constants.HeadlessServiceName(resource.GetFullName()),
                     namespaceParameter: resource.Namespace());
 
                 serviceExists = true;
@@ -118,7 +123,7 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAsync(
-                    name:               Constants.HeadlessServiceName(resource.Name()),
+                    name:               Constants.HeadlessServiceName(resource.GetFullName()),
                     namespaceParameter: resource.Namespace());
             }
 
@@ -133,7 +138,7 @@ namespace QdrantOperator
             try
             {
                 await k8s.CoreV1.ReadNamespacedConfigMapAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
 
                 configMapExists = true;
@@ -146,7 +151,7 @@ namespace QdrantOperator
             if (configMapExists)
             {
                 await k8s.CoreV1.DeleteNamespacedConfigMapAsync(
-                    name:               resource.Name(),
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
             }
 
@@ -161,7 +166,7 @@ namespace QdrantOperator
             try
             {
                 await k8s.CoreV1.ReadNamespacedServiceAccountAsync(
-                    name:               resource.Name(),
+                    name: resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
 
                 serviceExists = true;
@@ -174,7 +179,35 @@ namespace QdrantOperator
             if (serviceExists)
             {
                 await k8s.CoreV1.DeleteNamespacedServiceAccountAsync(
-                    name:               resource.Name(),
+                    name: resource.GetFullName(),
+                    namespaceParameter: resource.Namespace());
+            }
+
+        }
+        public async Task DeleteServiceMonitorAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            bool serviceExists = false;
+            try
+            {
+                await k8s.CustomObjects.ReadNamespacedCustomObjectAsync<V1ServiceMonitor>(
+                    name:               resource.GetFullName(),
+                    namespaceParameter: resource.Namespace());
+
+                serviceExists = true;
+            }
+            catch (Exception)
+            {
+                // doesn't exist
+            }
+
+            if (serviceExists)
+            {
+                await k8s.CustomObjects.DeleteNamespacedCustomObjectAsync<V1ServiceMonitor>(
+                    name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
             }
 
