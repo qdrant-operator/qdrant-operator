@@ -236,20 +236,20 @@ namespace QdrantOperator
                                 {
                                     new V1ContainerPort()
                                     {
-                                        Name          = "http",
-                                        ContainerPort = 6333,
+                                        Name          = Constants.HttpPortName,
+                                        ContainerPort = Constants.HttpPort,
                                         Protocol      = "TCP",
                                     },
                                     new V1ContainerPort()
                                     {
-                                        Name          = "grpc",
-                                        ContainerPort = 6334,
+                                        Name          = Constants.GrpcPortName,
+                                        ContainerPort = Constants.GrpcPort,
                                         Protocol      = "TCP"
                                     },
                                     new V1ContainerPort()
                                     {
-                                        Name          = "p2p",
-                                        ContainerPort = 6335,
+                                        Name          = Constants.P2pPortName,
+                                        ContainerPort = Constants.P2pPort,
                                         Protocol      = "TCP"
                                     },
                                 },
@@ -297,7 +297,7 @@ namespace QdrantOperator
                                     HttpGet = new V1HTTPGetAction()
                                     {
                                         Path   = "/readyz",
-                                        Port   = 6333,
+                                        Port   = Constants.HttpPort,
                                         Scheme = "HTTP"
                                     },
                                     InitialDelaySeconds = 5,
@@ -515,9 +515,9 @@ $@"#!/bin/sh
 SET_INDEX=${{HOSTNAME##*-}}
 echo ""Starting initializing for pod $SET_INDEX""
 if [ ""$SET_INDEX"" = ""0"" ]; then
-    exec ./entrypoint.sh --uri 'http://{Constants.QdrantContainerName}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335'
+    exec ./entrypoint.sh --uri 'http://{resource.Metadata.Name}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}'
 else
-    exec ./entrypoint.sh --bootstrap 'http://{Constants.QdrantContainerName}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335' --uri 'http://{Constants.QdrantContainerName}-'""$SET_INDEX""'.{Constants.HeadlessServiceName(resource.Metadata.Name)}:6335'
+    exec ./entrypoint.sh --bootstrap 'http://{resource.Metadata.Name}-0.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}' --uri 'http://{resource.Metadata.Name}-'""$SET_INDEX""'.{Constants.HeadlessServiceName(resource.Metadata.Name)}:{Constants.P2pPort}'
 fi".Replace("\r\n", "\n"));
             configData.Add("production.yaml", 
 $@"cluster:
@@ -525,7 +525,7 @@ $@"cluster:
     tick_period_ms: 100
   enabled: true
   p2p:
-    port: 6335
+    port: {Constants.P2pPort}
 service:
   enable_tls: false".Replace("\r\n", "\n"));
             configMap.Data = configData;
@@ -587,7 +587,6 @@ service:
                     body:               serviceAccount,
                     namespaceParameter: serviceAccount.Metadata.NamespaceProperty);
             }
-
         }
 
         public V1ServiceSpec CreateServiceSpec(string selectorName, bool headless = false)
@@ -598,24 +597,27 @@ service:
                 {
                     new V1ServicePort()
                     {
-                        Name          = "http",
+                        Name          = Constants.HttpPortName,
                         Protocol      = "TCP",
-                        Port          = 6333,
-                        TargetPort    = 6333
+                        Port          = Constants.HttpPort,
+                        TargetPort    = Constants.HttpPort,
+                        AppProtocol   = "http",
                     },
                     new V1ServicePort()
                     {
-                        Name          = "grpc",
+                        Name          = Constants.GrpcPortName,
                         Protocol      = "TCP",
-                        Port          = 6334,
-                        TargetPort    = 6334
+                        Port          = Constants.GrpcPort,
+                        TargetPort    = Constants.GrpcPort,
+                        AppProtocol   = "grpc"
                     },
                     new V1ServicePort()
                     {
-                        Name          = "p2p",
+                        Name          = Constants.P2pPortName,
                         Protocol      = "TCP",
-                        Port          = 6335,
-                        TargetPort    = 6335
+                        Port          = Constants.P2pPort,
+                        TargetPort    = Constants.P2pPort,
+                        AppProtocol   = "tcp"
                     }
                 },
                 Selector              = labels,
@@ -651,10 +653,10 @@ service:
                     }
                 },
                 namespaceParameter: resource.Namespace(),
-                fieldSelector: $"metadata.name={resource.Name()}",
-                retryDelay: TimeSpan.FromSeconds(30),
-                logger: logger,
-                cancellationToken: cts.Token);
+                fieldSelector:      $"metadata.name={resource.Name()}",
+                retryDelay:         TimeSpan.FromSeconds(30),
+                logger:             logger,
+                cancellationToken:  cts.Token);
         }
     }
 
