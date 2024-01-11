@@ -28,6 +28,7 @@ namespace QdrantOperator
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1ServiceMonitor>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1PersistentVolumeClaim>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantClusterController : ResourceControllerBase<V1QdrantCluster>
@@ -425,6 +426,9 @@ namespace QdrantOperator
                 service.Metadata.Labels = labels;
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
+
+            service.Metadata.Labels["metrics"] = "true";
+
             service.Spec = CreateServiceSpec(resource.GetFullName(), false);
 
             if (exists)
@@ -640,6 +644,7 @@ service:
                 MatchLabels = labels
             };
 
+            serviceMonitor.Spec.Selector.MatchLabels["metrics"] = "true";
 
             await k8s.CustomObjects.UpsertNamespacedCustomObjectAsync(
                    body:               serviceMonitor,
