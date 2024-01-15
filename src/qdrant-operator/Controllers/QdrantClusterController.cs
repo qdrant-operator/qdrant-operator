@@ -12,6 +12,7 @@ using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
 using Neon.K8s.Resources.Prometheus;
+using Neon.K8s.Resources.Grafana;
 using Neon.Operator;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
@@ -20,6 +21,7 @@ using Neon.Operator.Rbac;
 using Neon.Tasks;
 
 using QdrantOperator.Entities;
+using QdrantOperator.Util;
 
 namespace QdrantOperator
 {
@@ -28,8 +30,11 @@ namespace QdrantOperator
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
-    [RbacRule<V1ServiceMonitor>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1PersistentVolumeClaim>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
+    [DependentResource<V1StatefulSet>]
+    [DependentResource<V1ConfigMap>]
+    [DependentResource<V1Service>]
+    [DependentResource<V1ServiceAccount>]
     [ResourceController(AutoRegisterFinalizers = true)]
     public class QdrantClusterController : ResourceControllerBase<V1QdrantCluster>
     {
@@ -79,12 +84,6 @@ namespace QdrantOperator
             labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
             labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
 
-            labels = new Dictionary<string, string>();
-            labels.Add("app", resource.GetFullName());
-            labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
-            labels.Add("app.kubernetes.io/name", resource.Metadata.Name);
-            labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
-
             var tasks = new List<Task>()
             {
                 UpsertStatefulsetAsync(resource),
@@ -97,6 +96,11 @@ namespace QdrantOperator
             if (resource.Spec.Metrics.ServiceMonitorEnabled)
             {
                 tasks.Add(UpsertServiceMonitorAsync(resource));
+            }
+
+            if (resource.Spec.Metrics.Grafana.DashboardEnabled)
+            {
+                tasks.Add(UpsertGrafanaDashboardAsync(resource));
             }
 
             await NeonHelper.WaitAllAsync(tasks);
@@ -123,8 +127,8 @@ namespace QdrantOperator
                 };
 
                 await k8s.CoreV1.ReplaceNamespacedPersistentVolumeClaimAsync(
-                    body: pvc,
-                    name: volumeName,
+                    body:               pvc,
+                    name:               volumeName,
                     namespaceParameter: resource.Namespace());
 
 
@@ -342,16 +346,8 @@ namespace QdrantOperator
                         SchedulerName = "default-scheduler"
                     }
                 },
-                ServiceName          = Constants.HeadlessServiceName(resource.GetFullName())
-            };
-
-            if (exists)
-            {
-                spec.VolumeClaimTemplates = statefulSet.Spec.VolumeClaimTemplates;
-            }
-            else
-            {
-                spec.VolumeClaimTemplates = new List<V1PersistentVolumeClaim>()
+                ServiceName          = Constants.HeadlessServiceName(resource.GetFullName()),
+                VolumeClaimTemplates = new List<V1PersistentVolumeClaim>()
                 {
                     new V1PersistentVolumeClaim()
                     {
@@ -379,25 +375,30 @@ namespace QdrantOperator
                         }
 
                     }
-                };
-            }
-
-            statefulSet.Spec = spec;
+                }
+            };
 
             if (exists)
             {
+                statefulSet.Spec.Replicas                             = spec.Replicas;
+                statefulSet.Spec.Template                             = spec.Template;
+                statefulSet.Spec.UpdateStrategy                       = spec.UpdateStrategy;
+                statefulSet.Spec.PersistentVolumeClaimRetentionPolicy = spec.PersistentVolumeClaimRetentionPolicy;
+                statefulSet.Spec.MinReadySeconds                      = spec.MinReadySeconds;
+
                 await k8s.AppsV1.ReplaceNamespacedStatefulSetAsync(
-                    body:               statefulSet, 
-                    name:statefulSet.Name(),
-                    namespaceParameter: statefulSet.Metadata.NamespaceProperty);
+                    body:               statefulSet,
+                    name:               statefulSet.Name(),
+                    namespaceParameter: resource.Namespace());
             }
             else
             {
+                statefulSet.Spec = spec;
+
                 await k8s.AppsV1.CreateNamespacedStatefulSetAsync(
                     body:               statefulSet,
-                    namespaceParameter: statefulSet.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
-
         }
 
         public async Task UpsertServiceAsync(V1QdrantCluster resource)
@@ -423,11 +424,16 @@ namespace QdrantOperator
                 service = new V1Service().Initialize();
                 service.Metadata.Name = resource.GetFullName();
                 service.Metadata.SetNamespace(resource.Namespace());
-                service.Metadata.Labels = labels;
+
+                foreach (var label in labels)
+                {
+                    service.Metadata.SetLabel(label.Key, label.Value);
+                }
+
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
 
-            service.Metadata.Labels["metrics"] = "true";
+            service.Metadata.SetLabel("metrics", "true");
 
             service.Spec = CreateServiceSpec(resource.GetFullName(), false);
 
@@ -436,13 +442,13 @@ namespace QdrantOperator
                 await k8s.CoreV1.ReplaceNamespacedServiceAsync(
                     body:               service,
                     name:               service.Name(),
-                    namespaceParameter: service.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
             else
             {
                 await k8s.CoreV1.CreateNamespacedServiceAsync(
                     body:               service,
-                    namespaceParameter: service.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
 
         }
@@ -482,13 +488,13 @@ namespace QdrantOperator
                 await k8s.CoreV1.ReplaceNamespacedServiceAsync(
                     body:               service,
                     name:               service.Name(),
-                    namespaceParameter: service.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
             else
             {
                 await k8s.CoreV1.CreateNamespacedServiceAsync(
                     body:               service,
-                    namespaceParameter: service.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
         }
 
@@ -546,13 +552,13 @@ service:
                 await k8s.CoreV1.ReplaceNamespacedConfigMapAsync(
                     body:               configMap,
                     name:               configMap.Name(),
-                    namespaceParameter: configMap.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
             else
             {
                 await k8s.CoreV1.CreateNamespacedConfigMapAsync(
                     body:               configMap,
-                    namespaceParameter: configMap.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
 
         }
@@ -590,13 +596,13 @@ service:
                 await k8s.CoreV1.ReplaceNamespacedServiceAccountAsync(
                     body:               serviceAccount,
                     name:               serviceAccount.Name(),
-                    namespaceParameter: serviceAccount.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
             else
             {
                 await k8s.CoreV1.CreateNamespacedServiceAccountAsync(
                     body:               serviceAccount,
-                    namespaceParameter: serviceAccount.Metadata.NamespaceProperty);
+                    namespaceParameter: resource.Namespace());
             }
         }
 
@@ -641,15 +647,73 @@ service:
             };
             serviceMonitor.Spec.Selector = new V1LabelSelector()
             {
-                MatchLabels = labels
+                MatchLabels = new Dictionary<string, string>()
             };
 
-            serviceMonitor.Spec.Selector.MatchLabels["metrics"] = "true";
+            foreach (var label in labels)
+            {
+                serviceMonitor.Spec.Selector.MatchLabels.Add(label.Key, label.Value);
+            }
+
+            serviceMonitor.Spec.Selector.MatchLabels.Add("metrics", "true");
 
             await k8s.CustomObjects.UpsertNamespacedCustomObjectAsync(
                    body:               serviceMonitor,
-                   name:               serviceMonitor.Name(),
-                   namespaceParameter: serviceMonitor.Metadata.NamespaceProperty);
+                   name:               serviceMonitor.Metadata.Name,
+                   namespaceParameter: resource.Namespace());
+        }
+
+        public async Task UpsertGrafanaDashboardAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            var grafanaDashboardList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1GrafanaDashboard>(
+                namespaceParameter: resource.Namespace(),
+                fieldSelector:      $"metadata.name={resource.GetFullName()}");
+
+            V1GrafanaDashboard grafanaDashboard;
+
+            if (grafanaDashboardList.Items.Count > 0)
+            {
+                logger.LogInformationEx(() => $"GrafanaDashboard for {resource.GetFullName()}/Qdrant exists, updating existing GrafanaDashboard.");
+                grafanaDashboard = grafanaDashboardList.Items[0];
+            }
+            else
+            {
+                grafanaDashboard = new V1GrafanaDashboard().Initialize();
+                grafanaDashboard.Metadata.Name = resource.GetFullName();
+                grafanaDashboard.Metadata.SetNamespace(resource.Namespace());
+                grafanaDashboard.Metadata.Labels = labels;
+                grafanaDashboard.AddOwnerReference(resource.MakeOwnerReference());
+            }
+
+            var metricInterval = DurationHelper.ParseDuration(resource.Spec.Metrics.Interval);
+
+            foreach (var label in resource.Spec.Metrics.Grafana.InstanceSelector.MatchLabels)
+            {
+                grafanaDashboard.SetLabel(label.Key, label.Value);
+            }
+
+            grafanaDashboard.Spec = new V1GrafanaDashboardSpec();
+            grafanaDashboard.Spec.Json = string.Format(
+                format: Dashboard.DashboardJson,
+                DurationHelper.ToDurationString(metricInterval * 2), NeonHelper.CreateBase36Uuid());
+
+            grafanaDashboard.Spec.Datasources = new List<V1GrafanaDatasource>()
+            {
+                new V1GrafanaDatasource()
+                {
+                    InputName      = "DS_PROMETHEUS",
+                    DatasourceName = resource.Spec.Metrics.Grafana.DatasourceName
+                }
+            };
+
+            await k8s.CustomObjects.UpsertNamespacedCustomObjectAsync(
+                   body:               grafanaDashboard,
+                   name:               grafanaDashboard.Metadata.Name,
+                   namespaceParameter: resource.Namespace());
         }
 
         public V1ServiceSpec CreateServiceSpec(string selectorName, bool headless = false)

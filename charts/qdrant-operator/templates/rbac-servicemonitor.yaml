@@ -1,0 +1,26 @@
+{{ if .Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor" -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: qdrant-operator-service-monitor
+rules:
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: qdrant-operator-service-monitor
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: qdrant-operator-service-monitor
+subjects:
+- kind: ServiceAccount
+  name: qdrant-operator
+  namespace: '{{ .Release.Namespace }}'
+{{ end -}}

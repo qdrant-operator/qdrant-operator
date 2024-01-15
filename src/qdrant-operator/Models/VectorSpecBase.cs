@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace QdrantOperator.Models
 {
@@ -15,6 +16,7 @@ namespace QdrantOperator.Models
         public QuantizationConfig QuantizationConfig { get; set; }
 
         [DefaultValue(false)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public bool? OnDisk { get; set; } = false;
     }
 }

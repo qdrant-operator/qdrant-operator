@@ -9,8 +9,11 @@ using k8s.Models;
 
 using Microsoft.Extensions.Logging;
 
+using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
+using Neon.K8s.PortForward;
+using Neon.Net;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
@@ -42,10 +45,27 @@ namespace QdrantOperator
             ILogger<QdrantCollectionController>   logger,
             ILoggerFactory                        loggerFactory)
         {
-            this.k8s              = k8s;
-            this.finalizerManager = finalizerManager;
-            this.logger           = logger;
-            this.loggerFactory    = loggerFactory;
+            this.k8s                = k8s;
+            this.finalizerManager   = finalizerManager;
+            this.logger             = logger;
+            this.loggerFactory      = loggerFactory;
+        }
+
+        private async Task<QdrantClient> CreateQdrantClientAsync(V1QdrantCollection resource, V1QdrantCluster cluster)
+        {
+            var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
+            var clusterPort = 6334;
+
+            logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");
+
+            var qdrantClient = new QdrantClient(
+                host:          clusterHost,
+                port:          clusterPort,
+                https:         false,
+                grpcTimeout:   TimeSpan.FromSeconds(60),
+                loggerFactory: this.loggerFactory);
+
+            return qdrantClient;
         }
 
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCollection resource)
@@ -66,17 +86,7 @@ namespace QdrantOperator
 
             var cluster = clusters.First();
 
-            var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
-            var clusterPort = 6334;
-
-            logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");
-
-                var qdrantClient = new QdrantClient(
-                    host:          clusterHost,
-                    port:          clusterPort,
-                    https:         false,
-                    grpcTimeout:   TimeSpan.FromSeconds(60),
-                    loggerFactory: loggerFactory);
+            var qdrantClient = await CreateQdrantClientAsync(resource, cluster);
 
             try
             {
@@ -132,7 +142,7 @@ namespace QdrantOperator
                     exists = true;
                 }
             }
-            catch (RpcException e) when (e.StatusCode == StatusCode.NotFound)
+            catch (RpcException e) when (e.StatusCode == StatusCode.NotFound || e.StatusCode == StatusCode.InvalidArgument)
             {
                 // doesn't exist
             }
@@ -140,6 +150,23 @@ namespace QdrantOperator
             {
                 logger?.LogErrorEx(e);
                 throw;
+            }
+
+            if (exists)
+            {
+                var currentVectors = resource.Status?.CurrentSpec?.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
+                var expectedVectors = resource.Spec.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
+
+                if (!currentVectors.SequenceEqual(expectedVectors))
+                {
+                    logger?.LogInformationEx(() => "Current vectors not equal to expected vectors, recreating collection. " +
+                    $"Current Vectors: {string.Join(',', currentVectors)}" +
+                    $"Expected Vectors {string.Join(',', expectedVectors)}");
+
+                    await qdrantClient.DeleteCollectionAsync(resource.Metadata.Name, TimeSpan.FromMinutes(5));
+
+                    exists = false;
+                }
             }
 
             if (exists)
@@ -166,7 +193,7 @@ namespace QdrantOperator
                         collectionParams.WriteConsistencyFactor = (uint)resource.Spec.WriteConsistencyFactor;
                     }
 
-                    var optimizersConfig   = resource.Spec.OptimizersConfigDiff?.ToGrpc(resource.Status?.CurrentSpec?.OptimizersConfigDiff);
+                    var optimizersConfig   = resource.Spec.OptimizersConfig?.ToGrpc(resource.Status?.CurrentSpec?.OptimizersConfig);
                     var hnswConfig         = resource.Spec.HnswConfig?.ToGrpc(resource.Status?.CurrentSpec?.HnswConfig);
                     var quantizationConfig = resource.Spec.QuantizationConfig?.ToGrpc(resource.Status?.CurrentSpec?.QuantizationConfig);
 
@@ -191,24 +218,21 @@ namespace QdrantOperator
 
                         foreach (var item in resource.Spec.VectorSpec.NamedVectors)
                         {
-                            Models.NamedVectorSpec other = null;
-                            
-                            resource.Status?.CurrentSpec?.VectorSpec.NamedVectors.TryGetValue(item.Key, out other);
+                            var other = resource.Status?.CurrentSpec?.VectorSpec.NamedVectors.Where(nv => nv.Name == item.Name).FirstOrDefault();
 
                             var vectorParams = new VectorParamsDiff()
                             {
-                                HnswConfig         = item.Value.HnswConfig?.ToGrpc(other.HnswConfig),
-                                QuantizationConfig = item.Value.QuantizationConfig?.ToGrpc(other.QuantizationConfig)
+                                HnswConfig         = item.HnswConfig?.ToGrpc(other.HnswConfig),
+                                QuantizationConfig = item.QuantizationConfig?.ToGrpc(other.QuantizationConfig)
                             };
 
-                            if (item.Value.OnDisk.HasValue)
+                            if (item.OnDisk.HasValue)
                             {
-                                vectorParams.OnDisk = item.Value.OnDisk.Value;
+                                vectorParams.OnDisk = item.OnDisk.Value;
                             }
 
-                            map.Map.Add(item.Key, vectorParams);
+                            map.Map.Add(item.Name, vectorParams);
                         }
-                       
 
                         await qdrantClient.UpdateCollectionAsync(
                             collectionName:      resource.Metadata.Name,
@@ -217,7 +241,8 @@ namespace QdrantOperator
                             collectionParams:    collectionParams,
                             hnswConfig:          hnswConfig,
                             quantizationConfig:  quantizationConfig,
-                            sparseVectorsConfig: sparseVectorsConfig);
+                            sparseVectorsConfig: sparseVectorsConfig,
+                            timeout:             TimeSpan.FromMinutes(5));
                     }
                     else
                     {
@@ -230,7 +255,8 @@ namespace QdrantOperator
                             collectionParams:    collectionParams,
                             hnswConfig:          hnswConfig,
                             quantizationConfig:  quantizationConfig,
-                            sparseVectorsConfig: sparseVectorsConfig);
+                            sparseVectorsConfig: sparseVectorsConfig,
+                            timeout:             TimeSpan.FromMinutes(5));
                     }
                 }
             }
@@ -242,7 +268,7 @@ namespace QdrantOperator
                 var writeConsistencyFactor = (uint)resource.Spec.WriteConsistencyFactor;
                 var shardingMethod         = resource.Spec.ShardingMethod.ToGrpcShardingMethod();
                 var onDiskPayload          = resource.Spec.OnDiskPayload.GetValueOrDefault();
-                var walConfig              = resource.Spec.WalConfigDiff?.ToGrpc();
+                var walConfig              = resource.Spec.WalConfig?.ToGrpc();
 
                 var initFormCollection = resource.Spec?.InitFrom?.Collection;
                 var collectionParams   = new CollectionParamsDiff()
@@ -252,7 +278,7 @@ namespace QdrantOperator
                     WriteConsistencyFactor = (uint)resource.Spec.WriteConsistencyFactor
                 };
 
-                var optimizersConfig  = resource.Spec.OptimizersConfigDiff?.ToGrpc();
+                var optimizersConfig  = resource.Spec.OptimizersConfig?.ToGrpc();
                 var hnswConfig        = resource.Spec.HnswConfig?.ToGrpc();
                 var quatizationConfig = resource.Spec.QuantizationConfig?.ToGrpc();
 
@@ -278,22 +304,35 @@ namespace QdrantOperator
                     {
                         var vectorParams = new VectorParams()
                         {
-                            HnswConfig = item.Value.HnswConfig?.ToGrpc(),
-                            QuantizationConfig = item.Value.QuantizationConfig?.ToGrpc()
+                            HnswConfig         = item.HnswConfig?.ToGrpc(),
+                            QuantizationConfig = item.QuantizationConfig?.ToGrpc(),
+                            Size               = (ulong)item.Size,
+                            Distance           = item.Distance.ToGrpcDistance(),
                         };
 
-                        if (item.Value.OnDisk.HasValue)
+                        if (item.OnDisk.HasValue)
                         {
-                            vectorParams.OnDisk = item.Value.OnDisk.Value;
+                            vectorParams.OnDisk = item.OnDisk.Value;
                         }
 
-                        map.Map.Add(item.Key, vectorParams);
+                        map.Map.Add(item.Name, vectorParams);
                     }
 
-                    await qdrantClient.CreateCollectionAsync(resource.Metadata.Name,
-                        map, shardNumber, replicaFactor, writeConsistencyFactor, onDiskPayload,
-                        hnswConfig, optimizersConfig, walConfig, quatizationConfig,
-                        initFormCollection, shardingMethod, sparseVectorConfig);
+                    await qdrantClient.CreateCollectionAsync(
+                        collectionName:         resource.Metadata.Name,
+                        vectorsConfig:          map,
+                        shardNumber:            shardNumber,
+                        replicationFactor:      replicaFactor,
+                        writeConsistencyFactor: writeConsistencyFactor,
+                        onDiskPayload:          onDiskPayload,
+                        hnswConfig:             hnswConfig,
+                        optimizersConfig:       optimizersConfig,
+                        walConfig:              walConfig,
+                        quantizationConfig:     quatizationConfig,
+                        initFromCollection:     initFormCollection,
+                        shardingMethod:         shardingMethod,
+                        sparseVectorsConfig:    sparseVectorConfig,
+                        timeout:                TimeSpan.FromMinutes(5));
                 }
                 else
                 {
@@ -312,11 +351,21 @@ namespace QdrantOperator
                         vectorsConfig.OnDisk = resource.Spec.VectorSpec.OnDisk.Value;
                     }
 
-                    await qdrantClient.CreateCollectionAsync(resource.Metadata.Name,
-                        vectorsConfig, shardNumber, replicaFactor,
-                        writeConsistencyFactor, onDiskPayload,
-                        hnswConfig, optimizersConfig, walConfig,
-                        quatizationConfig, initFormCollection, shardingMethod, sparseVectorConfig);
+                    await qdrantClient.CreateCollectionAsync(
+                        collectionName:         resource.Metadata.Name,
+                        vectorsConfig:          vectorsConfig,
+                        shardNumber:            shardNumber,
+                        replicationFactor:      replicaFactor,
+                        writeConsistencyFactor: writeConsistencyFactor,
+                        onDiskPayload:          onDiskPayload,
+                        hnswConfig:             hnswConfig,
+                        optimizersConfig:       optimizersConfig,
+                        walConfig:              walConfig,
+                        quantizationConfig:     quatizationConfig,
+                        initFromCollection:     initFormCollection,
+                        shardingMethod:         shardingMethod,
+                        sparseVectorsConfig:    sparseVectorConfig,
+                        timeout:                TimeSpan.FromMinutes(5));
                 }
             }
         }

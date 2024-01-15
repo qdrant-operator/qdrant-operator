@@ -6,8 +6,11 @@ using k8s;
 
 using Microsoft.Extensions.Logging;
 
+using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
+using Neon.Net;
+using Neon.K8s.PortForward;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
@@ -24,19 +27,40 @@ namespace QdrantOperator
     [RbacRule<V1QdrantCollectionFieldIndex>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     public class QdrantCollectionFieldIndexController : ResourceControllerBase<V1QdrantCollectionFieldIndex>
     {
-        private readonly IKubernetes k8s;
+        private readonly IKubernetes                                     k8s;
         private readonly IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager;
-        private readonly ILogger<QdrantCollectionFieldIndexController> logger;
+        private readonly ILogger<QdrantCollectionFieldIndexController>   logger;
+        private readonly ILoggerFactory                                  loggerFactory;
 
         public QdrantCollectionFieldIndexController(
-            IKubernetes k8s,
+            IKubernetes                                     k8s,
             IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager,
-            ILogger<QdrantCollectionFieldIndexController> logger)
+            ILogger<QdrantCollectionFieldIndexController>   logger,
+            ILoggerFactory                                  loggerFactory)
         {
-            this.k8s = k8s;
-            this.finalizerManager = finalizerManager;
-            this.logger = logger;
+            this.k8s                = k8s;
+            this.finalizerManager   = finalizerManager;
+            this.logger             = logger;
+            this.loggerFactory      = loggerFactory;
         }
+
+        private async Task<QdrantClient> CreateQdrantClientAsync(V1QdrantCollectionFieldIndex resource, V1QdrantCluster cluster)
+        {
+            var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
+            var clusterPort = 6334;
+
+            logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");
+
+            var qdrantClient = new QdrantClient(
+                host:          clusterHost,
+                port:          clusterPort,
+                https:         false,
+                grpcTimeout:   TimeSpan.FromSeconds(60),
+                loggerFactory: this.loggerFactory);
+
+            return qdrantClient;
+        }
+
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCollectionFieldIndex resource)
         {
             await SyncContext.Clear;
@@ -50,10 +74,8 @@ namespace QdrantOperator
             }
 
             var cluster = clusters.First();
-            var qdrantClient = new QdrantClient(
-                host:  $"{cluster.GetFullName()}.{cluster.Metadata.NamespaceProperty}",
-                port:  6334,
-                https: false);
+
+            var qdrantClient = await CreateQdrantClientAsync(resource, cluster);
 
             if (!(await qdrantClient.CollectionExistsAsync(resource.Spec.Collection)))
             {
@@ -83,7 +105,7 @@ namespace QdrantOperator
             }
             if (info.PayloadSchema.ContainsKey(resource.Spec.FieldName))
             {
-                await qdrantClient.DeletePayloadIndexAsync(resource.Spec.Collection, resource.Spec.FieldName);
+                await qdrantClient.DeletePayloadIndexAsync(resource.Spec.Collection, resource.Spec.FieldName, wait: true);
             }
 
             switch (resource.Spec.Type)

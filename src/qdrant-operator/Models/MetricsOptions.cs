@@ -7,6 +7,8 @@ namespace QdrantOperator.Models
         [DefaultValue(false)]
         public bool ServiceMonitorEnabled { get; set; } = false;
 
+        public GrafanaOptions Grafana { get; set; } = new GrafanaOptions();
+
         [DefaultValue("60s")]
         public string Interval { get; set; } = "60s";
 

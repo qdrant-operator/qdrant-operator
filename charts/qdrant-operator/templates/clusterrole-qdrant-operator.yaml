@@ -34,12 +34,6 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - monitoring.coreos.com
-  resources:
-  - servicemonitors
-  verbs:
-  - '*'
-- apiGroups:
   - qdrant.io
   resources:
   - qdrantclusters

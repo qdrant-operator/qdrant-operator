@@ -41,6 +41,33 @@ spec:
                 properties:
                   serviceMonitorEnabled:
                     type: boolean
+                  grafana:
+                    properties:
+                      dashboardEnabled:
+                        type: boolean
+                      datasourceName:
+                        type: string
+                      instanceSelector:
+                        properties:
+                          matchExpressions:
+                            items:
+                              properties:
+                                key:
+                                  type: string
+                                operator:
+                                  type: string
+                                values:
+                                  items:
+                                    type: string
+                                  type: array
+                              type: object
+                            type: array
+                          matchLabels:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                    type: object
                   interval:
                     type: string
                   scrapeTimeout:

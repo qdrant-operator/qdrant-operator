@@ -75,8 +75,8 @@ namespace QdrantOperator
             [DefaultValue(null)]
             public bool? OnDiskPayload { get; set; } = null;
             public HnswConfig HnswConfig { get; set; }
-            public WalConfigDiff WalConfigDiff { get; set; }
-            public OptimizersConfigDiff OptimizersConfigDiff { get; set; }
+            public WalConfigDiff WalConfig { get; set; }
+            public OptimizersConfigDiff OptimizersConfig { get; set; }
             public InitFrom InitFrom { get; set; }
             public QuantizationConfig QuantizationConfig { get; set; }
             public Dictionary<string, SparseVectorParams> SparseVectors { get; set; }

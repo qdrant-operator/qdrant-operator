@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 
 using Neon.Common;
 using Neon.Diagnostics;
@@ -50,12 +48,15 @@ namespace QdrantOperator
                 int.TryParse(Environment.GetEnvironmentVariable("METRICS_PORT"), out metricsPort);
             }
 
-            logger?.LogInformationEx(() => $"Configuring metrics port: {metricsPort}");
-
-            services.AddMetricServer(options =>
+            if (!NeonHelper.IsDevWorkstation)
             {
-                options.Port = (ushort)metricsPort;
-            });
+                logger?.LogInformationEx(() => $"Configuring metrics port: {metricsPort}");
+
+                services.AddMetricServer(options =>
+                {
+                    options.Port = (ushort)metricsPort;
+                });
+            }
         }
 
         public void Configure(IApplicationBuilder app)

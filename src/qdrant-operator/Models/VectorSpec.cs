@@ -5,7 +5,7 @@ namespace QdrantOperator.Models
 {
     public class VectorSpec : VectorSpecBase
     {
-        public Dictionary<string, NamedVectorSpec> NamedVectors { get; set; }
+        public List<NamedVectorSpec> NamedVectors { get; set; }
 
         public Qdrant.Client.Grpc.VectorParamsDiff ToGrpcDiff(VectorSpec other)
         {
