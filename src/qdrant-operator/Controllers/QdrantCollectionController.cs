@@ -154,18 +154,21 @@ namespace QdrantOperator
 
             if (exists)
             {
-                var currentVectors = resource.Status?.CurrentSpec?.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
-                var expectedVectors = resource.Spec.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
-
-                if (!currentVectors.SequenceEqual(expectedVectors))
+                if (resource.Spec.VectorSpec?.NamedVectors != null)
                 {
-                    logger?.LogInformationEx(() => "Current vectors not equal to expected vectors, recreating collection. " +
-                    $"Current Vectors: {string.Join(',', currentVectors)}" +
-                    $"Expected Vectors {string.Join(',', expectedVectors)}");
+                    var currentVectors = resource.Status?.CurrentSpec?.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
+                    var expectedVectors = resource.Spec.VectorSpec?.NamedVectors?.Select(nv => nv.Name).Distinct().Order();
 
-                    await qdrantClient.DeleteCollectionAsync(resource.Metadata.Name, TimeSpan.FromMinutes(5));
+                    if (!currentVectors.SequenceEqual(expectedVectors))
+                    {
+                        logger?.LogInformationEx(() => "Current vectors not equal to expected vectors, recreating collection. " +
+                        $"Current Vectors: {string.Join(',', currentVectors)}" +
+                        $"Expected Vectors {string.Join(',', expectedVectors)}");
 
-                    exists = false;
+                        await qdrantClient.DeleteCollectionAsync(resource.Metadata.Name, TimeSpan.FromMinutes(5));
+
+                        exists = false;
+                    }
                 }
             }
 

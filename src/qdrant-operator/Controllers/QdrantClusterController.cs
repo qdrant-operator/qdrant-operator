@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,8 +12,8 @@ using Microsoft.Extensions.Logging;
 using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
-using Neon.K8s.Resources.Prometheus;
 using Neon.K8s.Resources.Grafana;
+using Neon.K8s.Resources.Prometheus;
 using Neon.Operator;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
@@ -157,7 +158,7 @@ namespace QdrantOperator
                 statefulSet = new V1StatefulSet().Initialize();
                 statefulSet.Metadata.Name = resource.GetFullName();
                 statefulSet.Metadata.SetNamespace(resource.Namespace());
-                statefulSet.Metadata.Labels = labels;
+                statefulSet.Metadata.SetLabels(labels);
                 statefulSet.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -166,13 +167,13 @@ namespace QdrantOperator
                 Replicas = resource.Spec.Replicas,
                 Selector = new V1LabelSelector()
                 {
-                    MatchLabels = labels
+                    MatchLabels = new Dictionary<string, string>()
                 },
                 Template = new V1PodTemplateSpec()
                 {
                     Metadata = new V1ObjectMeta()
                     {
-                        Labels = labels
+                        Labels = new Dictionary<string, string>()
                     },
                     Spec = new V1PodSpec()
                     {
@@ -354,7 +355,6 @@ namespace QdrantOperator
                         Metadata = new V1ObjectMeta()
                         {
                             Name   = Constants.QdrantStorage,
-                            Labels = labels
                         },
                         Spec = new V1PersistentVolumeClaimSpec()
                         {
@@ -377,6 +377,10 @@ namespace QdrantOperator
                     }
                 }
             };
+
+            spec.Selector.MatchLabels.AddRange(labels);
+            spec.Template.Metadata.SetLabels(labels);
+            spec.VolumeClaimTemplates.First().Metadata.SetLabels(labels);
 
             if (exists)
             {
@@ -424,12 +428,7 @@ namespace QdrantOperator
                 service = new V1Service().Initialize();
                 service.Metadata.Name = resource.GetFullName();
                 service.Metadata.SetNamespace(resource.Namespace());
-
-                foreach (var label in labels)
-                {
-                    service.Metadata.SetLabel(label.Key, label.Value);
-                }
-
+                service.Metadata.SetLabels(labels);
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -476,7 +475,7 @@ namespace QdrantOperator
                 service = new V1Service().Initialize();
                 service.Metadata.Name = Constants.HeadlessServiceName(resource.GetFullName());
                 service.Metadata.SetNamespace(resource.Namespace());
-                service.Metadata.Labels = labels;
+                service.Metadata.SetLabels(labels);
                 service.AddOwnerReference(resource.MakeOwnerReference());
             }
             service.Spec = CreateServiceSpec(resource.GetFullName(), true);
@@ -521,7 +520,7 @@ namespace QdrantOperator
                 configMap = new V1ConfigMap().Initialize();
                 configMap.Metadata.Name = resource.GetFullName();
                 configMap.Metadata.SetNamespace(resource.Namespace());
-                configMap.Metadata.Labels = labels;
+                configMap.Metadata.SetLabels(labels);
                 configMap.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -587,7 +586,7 @@ service:
                 serviceAccount = new V1ServiceAccount().Initialize();
                 serviceAccount.Metadata.Name = resource.GetFullName();
                 serviceAccount.Metadata.SetNamespace(resource.Namespace());
-                serviceAccount.Metadata.Labels = labels;
+                serviceAccount.Metadata.SetLabels(labels);
                 serviceAccount.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -628,7 +627,7 @@ service:
                 serviceMonitor = new V1ServiceMonitor().Initialize();
                 serviceMonitor.Metadata.Name = resource.GetFullName();
                 serviceMonitor.Metadata.SetNamespace(resource.Namespace());
-                serviceMonitor.Metadata.Labels = labels;
+                serviceMonitor.Metadata.SetLabels(labels);
                 serviceMonitor.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -650,11 +649,7 @@ service:
                 MatchLabels = new Dictionary<string, string>()
             };
 
-            foreach (var label in labels)
-            {
-                serviceMonitor.Spec.Selector.MatchLabels.Add(label.Key, label.Value);
-            }
-
+            serviceMonitor.Spec.Selector.MatchLabels.AddRange(labels);
             serviceMonitor.Spec.Selector.MatchLabels.Add("metrics", "true");
 
             await k8s.CustomObjects.UpsertNamespacedCustomObjectAsync(
@@ -685,7 +680,7 @@ service:
                 grafanaDashboard = new V1GrafanaDashboard().Initialize();
                 grafanaDashboard.Metadata.Name = resource.GetFullName();
                 grafanaDashboard.Metadata.SetNamespace(resource.Namespace());
-                grafanaDashboard.Metadata.Labels = labels;
+                grafanaDashboard.Metadata.SetLabels(labels);
                 grafanaDashboard.AddOwnerReference(resource.MakeOwnerReference());
             }
 
@@ -699,7 +694,7 @@ service:
             grafanaDashboard.Spec = new V1GrafanaDashboardSpec();
             grafanaDashboard.Spec.Json = string.Format(
                 format: Dashboard.DashboardJson,
-                DurationHelper.ToDurationString(metricInterval * 2), NeonHelper.CreateBase36Uuid());
+                DurationHelper.ToDurationString(metricInterval * 2), resource.Uid());
 
             grafanaDashboard.Spec.Datasources = new List<V1GrafanaDatasource>()
             {
@@ -747,11 +742,13 @@ service:
                         AppProtocol   = "tcp"
                     }
                 },
-                Selector              = labels,
+                Selector              = new Dictionary<string, string>(),
                 Type                  = "ClusterIP",
                 InternalTrafficPolicy = "Cluster"
 
             };
+
+            spec.Selector.AddRange(labels);
 
             if (headless)
             {

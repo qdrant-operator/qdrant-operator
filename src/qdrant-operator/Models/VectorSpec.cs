@@ -1,8 +1,11 @@
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+using QdrantOperator.Models.Converters;
 
 namespace QdrantOperator.Models
 {
+    [JsonConverter(typeof(VectorSpecConverter))]
     public class VectorSpec : VectorSpecBase
     {
         public List<NamedVectorSpec> NamedVectors { get; set; }

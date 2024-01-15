@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-using QdrantOperator;
-using QdrantOperator.Util;
-using QdrantOperator.Models;
+using FluentAssertions;
 
 using k8s;
-using k8s.Models;
+
+using QdrantOperator;
+using QdrantOperator.Models;
+using QdrantOperator.Util;
 
 namespace Test.QdrantOperator
 {
@@ -53,10 +53,117 @@ namespace Test.QdrantOperator
         }
 
         [Fact]
-        public void FormatDashboard()
+        public void VectorSpecConverterTest()
         {
-            var d2 = string.Format(Dashboard.DashboardJson, DurationHelper.ToDurationString(TimeSpan.FromMinutes(2)));
+            var options = new JsonSerializerOptions();
+
+            options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.Converters.Add(new JsonStringEnumConverter());
+            options.WriteIndented = true;
+
+            var specString = $@"{{
+  ""namedVectors"": [
+    {{
+      ""name"": ""accelerometer-phone"",
+      ""size"": 18,
+      ""distance"": ""Cosine"",
+      ""onDisk"": true
+    }},
+    {{
+      ""name"": ""accelerometer-headphones"",
+      ""size"": 18,
+      ""distance"": ""Cosine"",
+      ""onDisk"": true
+    }}
+  ]
+}}";
+
+            //var spec = JsonSerializer.Deserialize<VectorSpec>(specString, options);
+
+            //var specStringOut = JsonSerializer.Serialize(spec, options);
+
+            //specString.Should().Be(specStringOut);
+            //Assert.Equal(specString, specStringOut);
+
+            var s2 = $@"{{
+				""distance"": ""Cosine"",
+				""namedVectors"": [
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""accelerometer-phone"",
+						""onDisk"": true,
+						""size"": 18
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""accelerometer-headphones"",
+						""onDisk"": true,
+						""size"": 18
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-acceleration-x"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-acceleration-y"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-acceleration-z"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-rotation-x"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-rotation-y"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-rotation-z"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-pitch"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-roll"",
+						""onDisk"": true,
+						""size"": 17
+					}},
+					{{
+						""distance"": ""Cosine"",
+						""name"": ""supermodel-headphones-all"",
+						""onDisk"": true,
+						""size"": 136
+					}}
+				],
+				""onDisk"": false,
+				""size"": 1
+			}}";
+
+        var spec = JsonSerializer.Deserialize<VectorSpec>(s2, options);
+
         }
+
 
         [Fact]
         public void CreateYaml()
