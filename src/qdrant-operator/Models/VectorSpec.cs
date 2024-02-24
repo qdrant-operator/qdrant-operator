@@ -1,11 +1,14 @@
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Text.Json.Serialization;
+
+using QdrantOperator.Models.Converters;
 
 namespace QdrantOperator.Models
 {
+    [JsonConverter(typeof(VectorSpecConverter))]
     public class VectorSpec : VectorSpecBase
     {
-        public Dictionary<string, NamedVectorSpec> NamedVectors { get; set; }
+        public List<NamedVectorSpec> NamedVectors { get; set; }
 
         public Qdrant.Client.Grpc.VectorParamsDiff ToGrpcDiff(VectorSpec other)
         {

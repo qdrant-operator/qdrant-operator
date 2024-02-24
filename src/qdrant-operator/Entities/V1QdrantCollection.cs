@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 using k8s;
 using k8s.Models;
@@ -7,6 +8,7 @@ using k8s.Models;
 using Neon.Operator.Attributes;
 
 using QdrantOperator.Models;
+using QdrantOperator.Models.Converters;
 
 namespace QdrantOperator
 {
@@ -55,6 +57,8 @@ namespace QdrantOperator
         {
             public string Cluster { get; set; }
 
+
+            [JsonConverter(typeof(VectorSpecConverter))]
             public VectorSpec VectorSpec { get; set; }
 
             [DefaultValue(4)]
@@ -75,8 +79,8 @@ namespace QdrantOperator
             [DefaultValue(null)]
             public bool? OnDiskPayload { get; set; } = null;
             public HnswConfig HnswConfig { get; set; }
-            public WalConfigDiff WalConfigDiff { get; set; }
-            public OptimizersConfigDiff OptimizersConfigDiff { get; set; }
+            public WalConfigDiff WalConfig { get; set; }
+            public OptimizersConfigDiff OptimizersConfig { get; set; }
             public InitFrom InitFrom { get; set; }
             public QuantizationConfig QuantizationConfig { get; set; }
             public Dictionary<string, SparseVectorParams> SparseVectors { get; set; }

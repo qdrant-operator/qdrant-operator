@@ -1,0 +1,26 @@
+{{ if .Capabilities.APIVersions.Has "integreatly.org/v1alpha1/GrafanaDashboard" -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: qdrant-operator-grafana-dashboard
+rules:
+- apiGroups:
+  - integreatly.org
+  resources:
+  - grafanadashboards
+  verbs:
+  - '*'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: qdrant-operator-grafana-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: qdrant-operator-grafana-dashboard
+subjects:
+- kind: ServiceAccount
+  name: qdrant-operator
+  namespace: '{{ .Release.Namespace }}'
+{{ end -}}

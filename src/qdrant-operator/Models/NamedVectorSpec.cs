@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace QdrantOperator.Models
 {
     public class NamedVectorSpec : VectorSpecBase
     {
+        [Required]
+        public string Name { get; set; }
         public Qdrant.Client.Grpc.VectorParamsDiff ToGrpcDiff(NamedVectorSpec other)
         {
             var result = new Qdrant.Client.Grpc.VectorParamsDiff();

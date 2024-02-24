@@ -39,6 +39,7 @@ rules:
   - qdrantclusters
   - qdrantclusters/status
   - qdrantcollectionfieldindexes
+  - qdrantcollectionfieldindexes/status
   - qdrantcollections
   - qdrantcollections/status
   verbs:

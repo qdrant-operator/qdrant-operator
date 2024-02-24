@@ -76,7 +76,7 @@ namespace QdrantOperator
                 collectionInfo = await qdrantClient.GetCollectionInfoAsync(resource.Metadata.Name);
                 if (collectionInfo != null)
                 {
-                    await qdrantClient.DeleteCollectionAsync(resource.Metadata.Name);
+                    await qdrantClient.DeleteCollectionAsync(resource.Metadata.Name, TimeSpan.FromMinutes(5));
 
                 }
             }
