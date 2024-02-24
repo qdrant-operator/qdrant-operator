@@ -12,15 +12,14 @@
         <NeonOperatorCrdOutputDir>$(SolutionDir)\charts\qdrant-operator\crds</NeonOperatorCrdOutputDir>
         <NeonOperatorRbacOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorRbacOutputDir>
         <NeonOperatorWebhookOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorWebhookOutputDir>
-        <NeonOperatorAutoRegisterWebhooks>True</NeonOperatorAutoRegisterWebhooks>
-        <NeonOperatorGenerateRbac>true</NeonOperatorGenerateRbac>
-        <NeonOperatorGenerateCrds>true</NeonOperatorGenerateCrds>
+        <NeonOperatorAnalyzerLoggingEnabled>true</NeonOperatorAnalyzerLoggingEnabled>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
-        <PackageReference Include="Neon.Common" Version="4.0.0-rc.3" />
-        <PackageReference Include="Neon.Operator" Version="1.0.0-beta.16" />
+        <PackageReference Include="Neon.Common" Version="4.0.4-rc.13" />
+        <PackageReference Include="Neon.Roslyn" Version="4.0.4-rc.13" />
+        <PackageReference Include="Neon.Operator" Version="2024.2.24-1708774500" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
