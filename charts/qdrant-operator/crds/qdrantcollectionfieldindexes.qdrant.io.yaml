@@ -19,28 +19,46 @@ spec:
           spec:
             properties:
               cluster:
+                description: Represents text as a sequence of UTF-16 code units.
                 type: string
               collection:
+                description: Represents text as a sequence of UTF-16 code units.
                 type: string
               fieldName:
+                description: Represents text as a sequence of UTF-16 code units.
                 type: string
               type:
+                enum:
+                - keyword
+                - integer
+                - float
+                - geo
+                - text
+                - bool
                 type: string
               textIndexType:
                 properties:
                   tokenizer:
+                    enum:
+                    - prefix
+                    - whitespace
+                    - word
+                    - multilingual
                     type: string
                   minTokenLen:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxTokenLen:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   loweracase:
+                    description: Represents a value type that can be assigned null.
                     type: boolean
                 type: object
             required:

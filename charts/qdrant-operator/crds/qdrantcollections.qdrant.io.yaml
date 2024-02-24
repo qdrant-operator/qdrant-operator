@@ -19,46 +19,63 @@ spec:
           spec:
             properties:
               cluster:
+                description: Represents text as a sequence of UTF-16 code units.
                 type: string
               vectorSpec:
                 properties:
                   namedVectors:
+                    description: Represents a collection of keys and values.
                     items:
+                      description: Defines a key/value pair that can be set or retrieved.
                       properties:
                         key:
+                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                         value:
+                          description: Gets the value in the key/value pair.
                           properties:
                             size:
+                              description: Represents a 64-bit signed integer.
                               format: int64
                               type: integer
                             distance:
+                              enum:
+                              - Cosine
+                              - Euclid
+                              - Dot
+                              - Manhattan
                               type: string
                             hnswConfig:
                               properties:
                                 m:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 efConstruct:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 4.0
                                   type: integer
                                 fullScanThreshold:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 10.0
                                   type: integer
                                 maxIndexingThreads:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 onDisk:
+                                  description: Represents a value type that can be assigned null.
                                   type: boolean
                                 payloadM:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
@@ -69,8 +86,10 @@ spec:
                                 scalarQuantizationConfig:
                                   properties:
                                     type:
+                                      description: Represents text as a sequence of UTF-16 code units.
                                       type: string
                                     quantile:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMaximum: false
                                       exclusiveMinimum: false
                                       format: float
@@ -78,13 +97,21 @@ spec:
                                       minimum: 0.5
                                       type: number
                                     alwaysRam:
+                                      description: Represents a value type that can be assigned null.
                                       type: boolean
                                   type: object
                                 productQuantization:
                                   properties:
                                     compressionRatio:
+                                      enum:
+                                      - x4
+                                      - x8
+                                      - x16
+                                      - x32
+                                      - x64
                                       type: string
                                     alwaysRam:
+                                      description: Represents a value type that can be assigned null.
                                       type: boolean
                                   required:
                                   - compressionRatio
@@ -92,44 +119,58 @@ spec:
                                 binaryQuantization:
                                   properties:
                                     alwaysRam:
+                                      description: Represents a value type that can be assigned null.
                                       type: boolean
                                   type: object
                               type: object
                             onDisk:
+                              description: Represents a value type that can be assigned null.
                               type: boolean
                           type: object
                       type: object
                     type: array
                   size:
+                    description: Represents a 64-bit signed integer.
                     format: int64
                     type: integer
                   distance:
+                    enum:
+                    - Cosine
+                    - Euclid
+                    - Dot
+                    - Manhattan
                     type: string
                   hnswConfig:
                     properties:
                       m:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       efConstruct:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 4.0
                         type: integer
                       fullScanThreshold:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 10.0
                         type: integer
                       maxIndexingThreads:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       onDisk:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                       payloadM:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
@@ -140,8 +181,10 @@ spec:
                       scalarQuantizationConfig:
                         properties:
                           type:
+                            description: Represents text as a sequence of UTF-16 code units.
                             type: string
                           quantile:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMaximum: false
                             exclusiveMinimum: false
                             format: float
@@ -149,13 +192,21 @@ spec:
                             minimum: 0.5
                             type: number
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         type: object
                       productQuantization:
                         properties:
                           compressionRatio:
+                            enum:
+                            - x4
+                            - x8
+                            - x16
+                            - x32
+                            - x64
                             type: string
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         required:
                         - compressionRatio
@@ -163,61 +214,72 @@ spec:
                       binaryQuantization:
                         properties:
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         type: object
                     type: object
                   onDisk:
+                    description: Represents a value type that can be assigned null.
                     type: boolean
                 type: object
               shardNumber:
+                description: Represents a 32-bit signed integer.
                 exclusiveMinimum: false
                 format: int32
                 minimum: 4.0
                 type: integer
               shardingMethod:
-                properties:
-                  hasValue:
-                    type: boolean
-                  value:
-                    type: string
-                type: object
+                description: Represents a value type that can be assigned null.
+                enum:
+                - auto
+                - custom
+                type: string
               replicationFactor:
+                description: Represents a 32-bit signed integer.
                 exclusiveMinimum: false
                 format: int32
                 minimum: 1.0
                 type: integer
               writeConsistencyFactor:
+                description: Represents a 32-bit signed integer.
                 exclusiveMinimum: false
                 format: int32
                 minimum: 1.0
                 type: integer
               onDiskPayload:
+                description: Represents a value type that can be assigned null.
                 type: boolean
               hnswConfig:
                 properties:
                   m:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   efConstruct:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 4.0
                     type: integer
                   fullScanThreshold:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 10.0
                     type: integer
                   maxIndexingThreads:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   onDisk:
+                    description: Represents a value type that can be assigned null.
                     type: boolean
                   payloadM:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
@@ -226,11 +288,13 @@ spec:
               walConfigDiff:
                 properties:
                   walCapacityMb:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   walSegmentsAhead:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
@@ -239,39 +303,47 @@ spec:
               optimizersConfigDiff:
                 properties:
                   deletedThreshold:
+                    description: Represents a value type that can be assigned null.
                     format: double
                     type: number
                   vacuumMinVectorNumber:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   defaultSegmentNumber:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxSegmentSize:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   memmapThreshold:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   indexingThreshold:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   flushIntervalSec:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxOptimizationThreads:
+                    description: Represents a value type that can be assigned null.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
@@ -280,6 +352,7 @@ spec:
               initFrom:
                 properties:
                   collection:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                 type: object
               quantizationConfig:
@@ -287,8 +360,10 @@ spec:
                   scalarQuantizationConfig:
                     properties:
                       type:
+                        description: Represents text as a sequence of UTF-16 code units.
                         type: string
                       quantile:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMaximum: false
                         exclusiveMinimum: false
                         format: float
@@ -296,13 +371,21 @@ spec:
                         minimum: 0.5
                         type: number
                       alwaysRam:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                     type: object
                   productQuantization:
                     properties:
                       compressionRatio:
+                        enum:
+                        - x4
+                        - x8
+                        - x16
+                        - x32
+                        - x64
                         type: string
                       alwaysRam:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                     required:
                     - compressionRatio
@@ -310,24 +393,31 @@ spec:
                   binaryQuantization:
                     properties:
                       alwaysRam:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                     type: object
                 type: object
               sparseVectors:
+                description: Represents a collection of keys and values.
                 items:
+                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
+                      description: Represents text as a sequence of UTF-16 code units.
                       type: string
                     value:
+                      description: Gets the value in the key/value pair.
                       properties:
                         index:
                           properties:
                             fullScanThreshold:
+                              description: Represents a value type that can be assigned null.
                               exclusiveMinimum: false
                               format: int32
                               minimum: 0.0
                               type: integer
                             onDisk:
+                              description: Represents a value type that can be assigned null.
                               type: boolean
                           type: object
                       type: object
@@ -339,46 +429,63 @@ spec:
               currentSpec:
                 properties:
                   cluster:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                   vectorSpec:
                     properties:
                       namedVectors:
+                        description: Represents a collection of keys and values.
                         items:
+                          description: Defines a key/value pair that can be set or retrieved.
                           properties:
                             key:
+                              description: Represents text as a sequence of UTF-16 code units.
                               type: string
                             value:
+                              description: Gets the value in the key/value pair.
                               properties:
                                 size:
+                                  description: Represents a 64-bit signed integer.
                                   format: int64
                                   type: integer
                                 distance:
+                                  enum:
+                                  - Cosine
+                                  - Euclid
+                                  - Dot
+                                  - Manhattan
                                   type: string
                                 hnswConfig:
                                   properties:
                                     m:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMinimum: false
                                       format: int32
                                       minimum: 0.0
                                       type: integer
                                     efConstruct:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMinimum: false
                                       format: int32
                                       minimum: 4.0
                                       type: integer
                                     fullScanThreshold:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMinimum: false
                                       format: int32
                                       minimum: 10.0
                                       type: integer
                                     maxIndexingThreads:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMinimum: false
                                       format: int32
                                       minimum: 0.0
                                       type: integer
                                     onDisk:
+                                      description: Represents a value type that can be assigned null.
                                       type: boolean
                                     payloadM:
+                                      description: Represents a value type that can be assigned null.
                                       exclusiveMinimum: false
                                       format: int32
                                       minimum: 0.0
@@ -389,8 +496,10 @@ spec:
                                     scalarQuantizationConfig:
                                       properties:
                                         type:
+                                          description: Represents text as a sequence of UTF-16 code units.
                                           type: string
                                         quantile:
+                                          description: Represents a value type that can be assigned null.
                                           exclusiveMaximum: false
                                           exclusiveMinimum: false
                                           format: float
@@ -398,13 +507,21 @@ spec:
                                           minimum: 0.5
                                           type: number
                                         alwaysRam:
+                                          description: Represents a value type that can be assigned null.
                                           type: boolean
                                       type: object
                                     productQuantization:
                                       properties:
                                         compressionRatio:
+                                          enum:
+                                          - x4
+                                          - x8
+                                          - x16
+                                          - x32
+                                          - x64
                                           type: string
                                         alwaysRam:
+                                          description: Represents a value type that can be assigned null.
                                           type: boolean
                                       required:
                                       - compressionRatio
@@ -412,44 +529,58 @@ spec:
                                     binaryQuantization:
                                       properties:
                                         alwaysRam:
+                                          description: Represents a value type that can be assigned null.
                                           type: boolean
                                       type: object
                                   type: object
                                 onDisk:
+                                  description: Represents a value type that can be assigned null.
                                   type: boolean
                               type: object
                           type: object
                         type: array
                       size:
+                        description: Represents a 64-bit signed integer.
                         format: int64
                         type: integer
                       distance:
+                        enum:
+                        - Cosine
+                        - Euclid
+                        - Dot
+                        - Manhattan
                         type: string
                       hnswConfig:
                         properties:
                           m:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
                             type: integer
                           efConstruct:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 4.0
                             type: integer
                           fullScanThreshold:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 10.0
                             type: integer
                           maxIndexingThreads:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
                             type: integer
                           onDisk:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                           payloadM:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
@@ -460,8 +591,10 @@ spec:
                           scalarQuantizationConfig:
                             properties:
                               type:
+                                description: Represents text as a sequence of UTF-16 code units.
                                 type: string
                               quantile:
+                                description: Represents a value type that can be assigned null.
                                 exclusiveMaximum: false
                                 exclusiveMinimum: false
                                 format: float
@@ -469,13 +602,21 @@ spec:
                                 minimum: 0.5
                                 type: number
                               alwaysRam:
+                                description: Represents a value type that can be assigned null.
                                 type: boolean
                             type: object
                           productQuantization:
                             properties:
                               compressionRatio:
+                                enum:
+                                - x4
+                                - x8
+                                - x16
+                                - x32
+                                - x64
                                 type: string
                               alwaysRam:
+                                description: Represents a value type that can be assigned null.
                                 type: boolean
                             required:
                             - compressionRatio
@@ -483,61 +624,72 @@ spec:
                           binaryQuantization:
                             properties:
                               alwaysRam:
+                                description: Represents a value type that can be assigned null.
                                 type: boolean
                             type: object
                         type: object
                       onDisk:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                     type: object
                   shardNumber:
+                    description: Represents a 32-bit signed integer.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 4.0
                     type: integer
                   shardingMethod:
-                    properties:
-                      hasValue:
-                        type: boolean
-                      value:
-                        type: string
-                    type: object
+                    description: Represents a value type that can be assigned null.
+                    enum:
+                    - auto
+                    - custom
+                    type: string
                   replicationFactor:
+                    description: Represents a 32-bit signed integer.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   writeConsistencyFactor:
+                    description: Represents a 32-bit signed integer.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   onDiskPayload:
+                    description: Represents a value type that can be assigned null.
                     type: boolean
                   hnswConfig:
                     properties:
                       m:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       efConstruct:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 4.0
                         type: integer
                       fullScanThreshold:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 10.0
                         type: integer
                       maxIndexingThreads:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       onDisk:
+                        description: Represents a value type that can be assigned null.
                         type: boolean
                       payloadM:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
@@ -546,11 +698,13 @@ spec:
                   walConfigDiff:
                     properties:
                       walCapacityMb:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 1.0
                         type: integer
                       walSegmentsAhead:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
@@ -559,39 +713,47 @@ spec:
                   optimizersConfigDiff:
                     properties:
                       deletedThreshold:
+                        description: Represents a value type that can be assigned null.
                         format: double
                         type: number
                       vacuumMinVectorNumber:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       defaultSegmentNumber:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       maxSegmentSize:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       memmapThreshold:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       indexingThreshold:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       flushIntervalSec:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       maxOptimizationThreads:
+                        description: Represents a value type that can be assigned null.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
@@ -600,6 +762,7 @@ spec:
                   initFrom:
                     properties:
                       collection:
+                        description: Represents text as a sequence of UTF-16 code units.
                         type: string
                     type: object
                   quantizationConfig:
@@ -607,8 +770,10 @@ spec:
                       scalarQuantizationConfig:
                         properties:
                           type:
+                            description: Represents text as a sequence of UTF-16 code units.
                             type: string
                           quantile:
+                            description: Represents a value type that can be assigned null.
                             exclusiveMaximum: false
                             exclusiveMinimum: false
                             format: float
@@ -616,13 +781,21 @@ spec:
                             minimum: 0.5
                             type: number
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         type: object
                       productQuantization:
                         properties:
                           compressionRatio:
+                            enum:
+                            - x4
+                            - x8
+                            - x16
+                            - x32
+                            - x64
                             type: string
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         required:
                         - compressionRatio
@@ -630,24 +803,31 @@ spec:
                       binaryQuantization:
                         properties:
                           alwaysRam:
+                            description: Represents a value type that can be assigned null.
                             type: boolean
                         type: object
                     type: object
                   sparseVectors:
+                    description: Represents a collection of keys and values.
                     items:
+                      description: Defines a key/value pair that can be set or retrieved.
                       properties:
                         key:
+                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                         value:
+                          description: Gets the value in the key/value pair.
                           properties:
                             index:
                               properties:
                                 fullScanThreshold:
+                                  description: Represents a value type that can be assigned null.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 onDisk:
+                                  description: Represents a value type that can be assigned null.
                                   type: boolean
                               type: object
                           type: object

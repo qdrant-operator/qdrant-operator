@@ -21,30 +21,41 @@ spec:
               image:
                 properties:
                   repository:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                   pullPolicy:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                   tag:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                 type: object
               persistence:
                 properties:
                   size:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                   storageClassName:
+                    description: Represents text as a sequence of UTF-16 code units.
                     type: string
                 type: object
               replicas:
+                description: Represents a 32-bit signed integer.
                 format: int32
                 type: integer
               serviceMonitors:
+                description: Represents a Boolean (true or false) value.
                 type: boolean
               nodeSelector:
+                description: Represents a collection of keys and values.
                 items:
+                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
+                      description: Represents text as a sequence of UTF-16 code units.
                       type: string
                     value:
+                      description: Represents text as a sequence of UTF-16 code units.
                       type: string
                   type: object
                 type: array
@@ -52,6 +63,7 @@ spec:
           status:
             properties:
               message:
+                description: Represents text as a sequence of UTF-16 code units.
                 type: string
             type: object
         type: object
