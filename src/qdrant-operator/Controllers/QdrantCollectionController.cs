@@ -29,6 +29,9 @@ using QdrantOperator.Extensions;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Handles the reconciliation of <see cref="V1QdrantCollection"/> entities.
+    /// </summary>
     [RbacRule<V1QdrantCollection>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [ResourceController(AutoRegisterFinalizers = true)]
@@ -39,6 +42,13 @@ namespace QdrantOperator
         private readonly ILogger<QdrantCollectionController>   logger;
         private readonly ILoggerFactory                        loggerFactory;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="finalizerManager"></param>
+        /// <param name="logger"></param>
+        /// <param name="loggerFactory"></param>
         public QdrantCollectionController(
             IKubernetes                           k8s,
             IFinalizerManager<V1QdrantCollection> finalizerManager,
@@ -70,6 +80,11 @@ namespace QdrantOperator
             return qdrantClient;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCollection resource)
         {
             await SyncContext.Clear;
@@ -118,6 +133,11 @@ namespace QdrantOperator
             return ResourceControllerResult.Ok();
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public override async Task DeletedAsync(V1QdrantCollection entity)
         {
             await SyncContext.Clear;
@@ -127,6 +147,12 @@ namespace QdrantOperator
             await base.DeletedAsync(entity);
         }
 
+        /// <summary>
+        /// Creates a qdrant collection.
+        /// </summary>
+        /// <param name="qdrantClient"></param>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task CreateCollectionAsync(QdrantClient qdrantClient, V1QdrantCollection resource)
         {
             await SyncContext.Clear;

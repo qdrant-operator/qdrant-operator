@@ -5,6 +5,7 @@
         <RootNamespace>QdrantOperator</RootNamespace>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <NoWarn>$(NoWarn);1701;1702;NETSDK1138;CS8892;ASP0014;IDE0063;IDE0090;IDE0017;IDE0079;IDE0066;NU1605;MSB3026;MSB3061;CS8981;TS2792;TS2688;TS1259;CA1416;JMA001;JMC001</NoWarn>
     </PropertyGroup>
 
@@ -18,7 +19,7 @@
     <ItemGroup>
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
         <PackageReference Include="Neon.Common" Version="4.0.4" />
-        <PackageReference Include="Neon.Operator" Version="1.0.4-pre.0" />
+        <PackageReference Include="Neon.Operator" Version="1.0.4-pre.1" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />

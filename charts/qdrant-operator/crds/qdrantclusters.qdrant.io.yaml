@@ -15,6 +15,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Represents a Qdrant cluster.
         properties:
           spec:
             properties:
@@ -22,224 +23,134 @@ spec:
                 description: Options for defining the container image.
                 properties:
                   repository:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The image repository.
                     type: string
                   pullPolicy:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The image pull policy.
                     type: string
                   tag:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The image tag.
                     type: string
                 type: object
               persistence:
                 description: Persistence options.
                 properties:
                   size:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The disk size for each cluster node.
                     type: string
                   storageClassName:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The storage class to use when creating volumes.
                     type: string
                 type: object
               replicas:
-                description: Represents a 32-bit signed integer.
+                description: The number of servers to deploy in the cluster.
                 format: int32
                 type: integer
               metrics:
                 description: Metrics related options.
                 properties:
                   serviceMonitorEnabled:
-                    description: Represents a Boolean (true or false) value.
+                    description: Whether to create a Prometheus ServiceMonitor for the cluster.
                     type: boolean
                   grafana:
+                    description: Grafana related options.
                     properties:
                       dashboardEnabled:
-                        description: Represents a Boolean (true or false) value.
+                        description: |-
+                          Whether to create a GrafanaDashboard resource. This depends on the Grafana
+                           Operator being installed.
                         type: boolean
                       datasourceName:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: The datasource name to use for the dashboard.
                         type: string
                       instanceSelector:
-                        description: |-
-                          A label selector is a label query over a set of resources. The result of
-                           matchLabels and matchExpressions are ANDed. An empty label selector matches all
-                           objects. A null label selector matches no objects.
+                        description: The Grafana instance selector.
                         properties:
                           matchExpressions:
-                            description: Represents a collection of objects that can be individually accessed by index.
+                            description: |-
+                              matchExpressions is a list of label selector requirements. The requirements are
+                               ANDed.
                             items:
-                              description: |-
-                                A label selector requirement is a selector that contains values, a key, and an
-                                 operator that relates the key and values.
                               properties:
                                 key:
-                                  description: Represents text as a sequence of UTF-16 code units.
+                                  description: key is the label key that the selector applies to.
                                   type: string
                                 operator:
-                                  description: Represents text as a sequence of UTF-16 code units.
+                                  description: |-
+                                    operator represents a key's relationship to a set of values. Valid operators are
+                                     In, NotIn, Exists and DoesNotExist.
                                   type: string
                                 values:
-                                  description: Represents a collection of objects that can be individually accessed by index.
+                                  description: |-
+                                    values is an array of string values. If the operator is In or NotIn, the values
+                                     array must be non-empty. If the operator is Exists or DoesNotExist, the values
+                                     array must be empty. This array is replaced during a strategic merge patch.
                                   items:
-                                    description: Represents text as a sequence of UTF-16 code units.
                                     type: string
                                   type: array
                               type: object
                             type: array
                           matchLabels:
                             additionalProperties:
-                              description: Represents text as a sequence of UTF-16 code units.
                               type: string
-                            description: Represents a generic collection of key/value pairs.
+                            description: |-
+                              matchLabels is a map of {key,value} pairs. A single {key,value} in the
+                               matchLabels map is equivalent to an element of matchExpressions, whose key field
+                               is "key", the operator is "In", and the values array contains only "value". The
+                               requirements are ANDed.
                             type: object
                         type: object
                     type: object
                   interval:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The metrics scrape interval. QdrantOperator.Models.MetricsOptions.ServiceMonitorEnabled must be enabled.
                     type: string
                   scrapeTimeout:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The metrics scrape timeout. QdrantOperator.Models.MetricsOptions.ServiceMonitorEnabled must be enabled.
                     type: string
                   honorLabels:
-                    description: Represents a Boolean (true or false) value.
+                    description: Whether to honor labels in the ServiceMonitor. QdrantOperator.Models.MetricsOptions.ServiceMonitorEnabled must be enabled.
                     type: boolean
                 type: object
               nodeSelector:
-                description: Represents a collection of keys and values.
+                description: Where to put the servers.
                 items:
-                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array
               antiAffinity:
-                description: Represents a Boolean (true or false) value.
+                description: |-
+                  Whether to add an antiAffinity rule to the statefulset. Enabling this will ensure
+                   that only 1 qdrant container will be deployed per kubernetes host.
                 type: boolean
               resources:
-                description: ResourceRequirements describes the compute resource requirements.
+                description: The resource requirements for each qdrant server.
                 properties:
                   claims:
-                    description: Represents a collection of objects that can be individually accessed by index.
+                    description: |-
+                      Claims lists the names of resources, defined in spec.resourceClaims, that are
+                       used by this container.
+
+                       This is an alpha field and requires enabling the DynamicResourceAllocation
+                       feature gate.
+
+                       This field is immutable. It can only be set for containers.
                     items:
-                      description: ResourceClaim references one entry in PodSpec.ResourceClaims.
                       properties:
                         name:
-                          description: Represents text as a sequence of UTF-16 code units.
+                          description: |-
+                            Name must match the name of one entry in pod.spec.resourceClaims of the Pod
+                             where this field is used. It makes that resource available inside a container.
                           type: string
                       type: object
                     type: array
                   limits:
                     additionalProperties:
-                      description: |-
-                        port https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go to c#
-                         Quantity is a fixed-point representation of a number.
-                         It provides convenient marshaling/unmarshaling in JSON and YAML,
-                         in addition to String() and Int64() accessors.
-                         The serialization format is:
-                         quantity        ::= signedNumber suffix
-                         (Note that suffix may be empty, from the "" case in decimalSI.)
-                         digit           ::= 0 | 1 | ... | 9
-                         digits          ::= digit | digitdigits
-                         number          ::= digits | digits.digits | digits. | .digits
-                         sign            ::= "+" | "-"
-                         signedNumber    ::= number | signnumber
-                         suffix          ::= binarySI | decimalExponent | decimalSI
-                         binarySI        ::= Ki | Mi | Gi | Ti | Pi | Ei
-                         (International System of units; See: http:///physics.nist.gov/cuu/Units/binary.html)
-                         decimalSI       ::= m | "" | k | M | G | T | P | E
-                         (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
-                         decimalExponent ::= "e" signedNumber | "E" signedNumber
-                         No matter which of the three exponent forms is used, no quantity may represent
-                         a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal
-                         places. Numbers larger or more precise will be capped or rounded up.
-                         (E.g.: 0.1m will rounded up to 1m.)
-                         This may be extended in the future if we require larger or smaller quantities.
-                         When a Quantity is parsed from a string, it will remember the type of suffix
-                         it had, and will use the same type again when it is serialized.
-                         Before serializing, Quantity will be put in "canonical form".
-                         This means that Exponent/suffix will be adjusted up or down (with a
-                         corresponding increase or decrease in Mantissa) such that:
-                         a. No precision is lost
-                         b. No fractional digits will be emitted
-                         c. The exponent (or suffix) is as large as possible.
-                         The sign will be omitted unless the number is negative.
-                         Examples:
-                         1.5 will be serialized as "1500m"
-                         1.5Gi will be serialized as "1536Mi"
-                         NOTE: We reserve the right to amend this canonical format, perhaps to
-                         allow 1.5 to be canonical.
-                         TODO: Remove above disclaimer after all bikeshedding about format is over,
-                         or after March 2015.
-                         Note that the quantity will NEVER be internally represented by a
-                         floating point number. That is the whole point of this exercise.
-                         Non-canonical values will still parse as long as they are well formed,
-                         but will be re-emitted in their canonical form. (So always use canonical
-                         form, or don't diff.)
-                         This format is intended to make it difficult to use these numbers without
-                         writing some sort of special handling code in the hopes that that will
-                         cause implementors to also use a fixed point implementation.
-                         Quantity is a fixed-point representation of a number. It provides convenient
-                         marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64()
-                         accessors.
-
-                         The serialization format is:
-
-                         ``` <quantity>        ::= <signedNumber><suffix>
-
-                         (Note that <suffix> may be empty, from the "" case in <decimalSI>.)
-
-                         <digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> |
-                         <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. |
-                         .<digits> <sign>            ::= "+" | "-" <signedNumber>    ::= <number> |
-                         <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> |
-                         <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei
-
-                         (International System of units; See:
-                         http://physics.nist.gov/cuu/Units/binary.html)
-
-                         <decimalSI>       ::= m | "" | k | M | G | T | P | E
-
-                         (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
-
-                         <decimalExponent> ::= "e" <signedNumber> | "E" <signedNumber> ```
-
-                         No matter which of the three exponent forms is used, no quantity may represent a
-                         number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal
-                         places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m
-                         will rounded up to 1m.) This may be extended in the future if we require larger
-                         or smaller quantities.
-
-                         When a Quantity is parsed from a string, it will remember the type of suffix it
-                         had, and will use the same type again when it is serialized.
-
-                         Before serializing, Quantity will be put in "canonical form". This means that
-                         Exponent/suffix will be adjusted up or down (with a corresponding increase or
-                         decrease in Mantissa) such that:
-
-                         - No precision is lost - No fractional digits will be emitted - The exponent (or
-                         suffix) is as large as possible.
-
-                         The sign will be omitted unless the number is negative.
-
-                         Examples:
-
-                         - 1.5 will be serialized as "1500m" - 1.5Gi will be serialized as "1536Mi"
-
-                         Note that the quantity will NEVER be internally represented by a floating point
-                         number. That is the whole point of this exercise.
-
-                         Non-canonical values will still parse as long as they are well formed, but will
-                         be re-emitted in their canonical form. (So always use canonical form, or don't
-                         diff.)
-
-                         This format is intended to make it difficult to use these numbers without
-                         writing some sort of special handling code in the hopes that that will cause
-                         implementors to also use a fixed point implementation.
                       properties:
                         format:
                           enum:
@@ -248,118 +159,14 @@ spec:
                           - decimalsi
                           type: string
                         value:
-                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                       type: object
-                    description: Represents a generic collection of key/value pairs.
+                    description: |-
+                      Limits describes the maximum amount of compute resources allowed. More info:
+                       https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
                   requests:
                     additionalProperties:
-                      description: |-
-                        port https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go to c#
-                         Quantity is a fixed-point representation of a number.
-                         It provides convenient marshaling/unmarshaling in JSON and YAML,
-                         in addition to String() and Int64() accessors.
-                         The serialization format is:
-                         quantity        ::= signedNumber suffix
-                         (Note that suffix may be empty, from the "" case in decimalSI.)
-                         digit           ::= 0 | 1 | ... | 9
-                         digits          ::= digit | digitdigits
-                         number          ::= digits | digits.digits | digits. | .digits
-                         sign            ::= "+" | "-"
-                         signedNumber    ::= number | signnumber
-                         suffix          ::= binarySI | decimalExponent | decimalSI
-                         binarySI        ::= Ki | Mi | Gi | Ti | Pi | Ei
-                         (International System of units; See: http:///physics.nist.gov/cuu/Units/binary.html)
-                         decimalSI       ::= m | "" | k | M | G | T | P | E
-                         (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
-                         decimalExponent ::= "e" signedNumber | "E" signedNumber
-                         No matter which of the three exponent forms is used, no quantity may represent
-                         a number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal
-                         places. Numbers larger or more precise will be capped or rounded up.
-                         (E.g.: 0.1m will rounded up to 1m.)
-                         This may be extended in the future if we require larger or smaller quantities.
-                         When a Quantity is parsed from a string, it will remember the type of suffix
-                         it had, and will use the same type again when it is serialized.
-                         Before serializing, Quantity will be put in "canonical form".
-                         This means that Exponent/suffix will be adjusted up or down (with a
-                         corresponding increase or decrease in Mantissa) such that:
-                         a. No precision is lost
-                         b. No fractional digits will be emitted
-                         c. The exponent (or suffix) is as large as possible.
-                         The sign will be omitted unless the number is negative.
-                         Examples:
-                         1.5 will be serialized as "1500m"
-                         1.5Gi will be serialized as "1536Mi"
-                         NOTE: We reserve the right to amend this canonical format, perhaps to
-                         allow 1.5 to be canonical.
-                         TODO: Remove above disclaimer after all bikeshedding about format is over,
-                         or after March 2015.
-                         Note that the quantity will NEVER be internally represented by a
-                         floating point number. That is the whole point of this exercise.
-                         Non-canonical values will still parse as long as they are well formed,
-                         but will be re-emitted in their canonical form. (So always use canonical
-                         form, or don't diff.)
-                         This format is intended to make it difficult to use these numbers without
-                         writing some sort of special handling code in the hopes that that will
-                         cause implementors to also use a fixed point implementation.
-                         Quantity is a fixed-point representation of a number. It provides convenient
-                         marshaling/unmarshaling in JSON and YAML, in addition to String() and AsInt64()
-                         accessors.
-
-                         The serialization format is:
-
-                         ``` <quantity>        ::= <signedNumber><suffix>
-
-                         (Note that <suffix> may be empty, from the "" case in <decimalSI>.)
-
-                         <digit>           ::= 0 | 1 | ... | 9 <digits>          ::= <digit> |
-                         <digit><digits> <number>          ::= <digits> | <digits>.<digits> | <digits>. |
-                         .<digits> <sign>            ::= "+" | "-" <signedNumber>    ::= <number> |
-                         <sign><number> <suffix>          ::= <binarySI> | <decimalExponent> |
-                         <decimalSI> <binarySI>        ::= Ki | Mi | Gi | Ti | Pi | Ei
-
-                         (International System of units; See:
-                         http://physics.nist.gov/cuu/Units/binary.html)
-
-                         <decimalSI>       ::= m | "" | k | M | G | T | P | E
-
-                         (Note that 1024 = 1Ki but 1000 = 1k; I didn't choose the capitalization.)
-
-                         <decimalExponent> ::= "e" <signedNumber> | "E" <signedNumber> ```
-
-                         No matter which of the three exponent forms is used, no quantity may represent a
-                         number greater than 2^63-1 in magnitude, nor may it have more than 3 decimal
-                         places. Numbers larger or more precise will be capped or rounded up. (E.g.: 0.1m
-                         will rounded up to 1m.) This may be extended in the future if we require larger
-                         or smaller quantities.
-
-                         When a Quantity is parsed from a string, it will remember the type of suffix it
-                         had, and will use the same type again when it is serialized.
-
-                         Before serializing, Quantity will be put in "canonical form". This means that
-                         Exponent/suffix will be adjusted up or down (with a corresponding increase or
-                         decrease in Mantissa) such that:
-
-                         - No precision is lost - No fractional digits will be emitted - The exponent (or
-                         suffix) is as large as possible.
-
-                         The sign will be omitted unless the number is negative.
-
-                         Examples:
-
-                         - 1.5 will be serialized as "1500m" - 1.5Gi will be serialized as "1536Mi"
-
-                         Note that the quantity will NEVER be internally represented by a floating point
-                         number. That is the whole point of this exercise.
-
-                         Non-canonical values will still parse as long as they are well formed, but will
-                         be re-emitted in their canonical form. (So always use canonical form, or don't
-                         diff.)
-
-                         This format is intended to make it difficult to use these numbers without
-                         writing some sort of special handling code in the hopes that that will cause
-                         implementors to also use a fixed point implementation.
                       properties:
                         format:
                           enum:
@@ -368,216 +175,340 @@ spec:
                           - decimalsi
                           type: string
                         value:
-                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                       type: object
-                    description: Represents a generic collection of key/value pairs.
+                    description: |-
+                      Requests describes the minimum amount of compute resources required. If Requests
+                       is omitted for a container, it defaults to Limits if that is explicitly
+                       specified, otherwise to an implementation-defined value. Requests cannot exceed
+                       Limits. More info:
+                       https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                     type: object
                 type: object
               podSecurityContext:
-                description: |-
-                  PodSecurityContext holds pod-level security attributes and common container
-                   settings. Some fields are also present in container.securityContext.  Field
-                   values of container.securityContext take precedence over field values of
-                   PodSecurityContext.
+                description: The pod security context options.
                 properties:
                   fsGroup:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      A special supplemental group that applies to all containers in a pod. Some
+                       volume types allow the Kubelet to change the ownership of that volume to be
+                       owned by the pod:
+
+                       1. The owning GID will be the FSGroup 2. The setgid bit is set (new files
+                       created in the volume will be owned by FSGroup) 3. The permission bits are OR'd
+                       with rw-rw----
+
+                       If unset, the Kubelet will not modify the ownership and permissions of any
+                       volume. Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   fsGroupChangePolicy:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: |-
+                      fsGroupChangePolicy defines behavior of changing ownership and permission of the
+                       volume before being exposed inside Pod. This field will only apply to volume
+                       types which support fsGroup based ownership(and permissions). It will have no
+                       effect on ephemeral volume types such as: secret, configmaps and emptydir. Valid
+                       values are "OnRootMismatch" and "Always". If not specified, "Always" is used.
+                       Note that this field cannot be set when spec.os.name is windows.
                     type: string
                   runAsGroup:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      The GID to run the entrypoint of the container process. Uses runtime default if
+                       unset. May also be set in SecurityContext.  If set in both SecurityContext and
+                       PodSecurityContext, the value specified in SecurityContext takes precedence for
+                       that container. Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   runAsNonRoot:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Indicates that the container must run as a non-root user. If true, the Kubelet
+                       will validate the image at runtime to ensure that it does not run as UID 0
+                       (root) and fail to start the container if it does. If unset or false, no such
+                       validation will be performed. May also be set in SecurityContext.  If set in
+                       both SecurityContext and PodSecurityContext, the value specified in
+                       SecurityContext takes precedence.
                     type: boolean
                   runAsUser:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      The UID to run the entrypoint of the container process. Defaults to user
+                       specified in image metadata if unspecified. May also be set in SecurityContext. 
+                       If set in both SecurityContext and PodSecurityContext, the value specified in
+                       SecurityContext takes precedence for that container. Note that this field cannot
+                       be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   seLinuxOptions:
-                    description: SELinuxOptions are the labels to be applied to the container
+                    description: |-
+                      The SELinux context to be applied to all containers. If unspecified, the
+                       container runtime will allocate a random SELinux context for each container. 
+                       May also be set in SecurityContext.  If set in both SecurityContext and
+                       PodSecurityContext, the value specified in SecurityContext takes precedence for
+                       that container. Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       level:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Level is SELinux level label that applies to the container.
                         type: string
                       role:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Role is a SELinux role label that applies to the container.
                         type: string
                       type:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Type is a SELinux type label that applies to the container.
                         type: string
                       user:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: User is a SELinux user label that applies to the container.
                         type: string
                     type: object
                   seccompProfile:
                     description: |-
-                      SeccompProfile defines a pod/container's seccomp profile settings. Only one
-                       profile source may be set.
+                      The seccomp options to use by the containers in this pod. Note that this field
+                       cannot be set when spec.os.name is windows.
                     properties:
                       localhostProfile:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          localhostProfile indicates a profile defined in a file on the node should be
+                           used. The profile must be preconfigured on the node to work. Must be a
+                           descending path, relative to the kubelet's configured seccomp profile location.
+                           Must be set if type is "Localhost". Must NOT be set for any other type.
                         type: string
                       type:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          type indicates which kind of seccomp profile will be applied. Valid options are:
+
+                           Localhost - a profile defined in a file on the node should be used.
+                           RuntimeDefault - the container runtime default profile should be used.
+                           Unconfined - no profile should be applied.
                         type: string
                     type: object
                   supplementalGroups:
-                    description: Represents a collection of objects that can be individually accessed by index.
+                    description: |-
+                      A list of groups applied to the first process run in each container, in addition
+                       to the container's primary GID, the fsGroup (if specified), and group
+                       memberships defined in the container image for the uid of the container process.
+                       If unspecified, no additional groups are added to any container. Note that group
+                       memberships defined in the container image for the uid of the container process
+                       are still effective, even if they are not included in this list. Note that this
+                       field cannot be set when spec.os.name is windows.
                     items:
-                      description: Represents a value type that can be assigned null.
                       format: int64
                       type: integer
                     type: array
                   sysctls:
-                    description: Represents a collection of objects that can be individually accessed by index.
+                    description: |-
+                      Sysctls hold a list of namespaced sysctls used for the pod. Pods with
+                       unsupported sysctls (by the container runtime) might fail to launch. Note that
+                       this field cannot be set when spec.os.name is windows.
                     items:
-                      description: Sysctl defines a kernel parameter to be set
                       properties:
                         name:
-                          description: Represents text as a sequence of UTF-16 code units.
+                          description: Name of a property to set
                           type: string
                         value:
-                          description: Represents text as a sequence of UTF-16 code units.
+                          description: Value of a property to set
                           type: string
                       type: object
                     type: array
                   windowsOptions:
-                    description: WindowsSecurityContextOptions contain Windows-specific options and credentials.
+                    description: |-
+                      The Windows specific settings applied to all containers. If unspecified, the
+                       options within a container's SecurityContext will be used. If set in both
+                       SecurityContext and PodSecurityContext, the value specified in SecurityContext
+                       takes precedence. Note that this field cannot be set when spec.os.name is linux.
                     properties:
                       gmsaCredentialSpec:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          GMSACredentialSpec is where the GMSA admission webhook
+                           (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+                           GMSA credential spec named by the GMSACredentialSpecName field.
                         type: string
                       gmsaCredentialSpecName:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: GMSACredentialSpecName is the name of the GMSA credential spec to use.
                         type: string
                       hostProcess:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          HostProcess determines if a container should be run as a 'Host Process'
+                           container. All of a Pod's containers must have the same effective HostProcess
+                           value (it is not allowed to have a mix of HostProcess containers and
+                           non-HostProcess containers). In addition, if HostProcess is true then
+                           HostNetwork must also be set to true.
                         type: boolean
                       runAsUserName:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          The UserName in Windows to run the entrypoint of the container process. Defaults
+                           to the user specified in image metadata if unspecified. May also be set in
+                           PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the
+                           value specified in SecurityContext takes precedence.
                         type: string
                     type: object
                 type: object
               securityContext:
-                description: |-
-                  SecurityContext holds security configuration that will be applied to a
-                   container. Some fields are present in both SecurityContext and
-                   PodSecurityContext.  When both are set, the values in SecurityContext take
-                   precedence.
+                description: The container security context options.
                 properties:
                   allowPrivilegeEscalation:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      AllowPrivilegeEscalation controls whether a process can gain more privileges
+                       than its parent process. This bool directly controls if the no_new_privs flag
+                       will be set on the container process. AllowPrivilegeEscalation is true always
+                       when the container is: 1) run as Privileged 2) has CAP_SYS_ADMIN Note that this
+                       field cannot be set when spec.os.name is windows.
                     type: boolean
                   capabilities:
-                    description: Adds and removes POSIX capabilities from running containers.
+                    description: |-
+                      The capabilities to add/drop when running containers. Defaults to the default
+                       set of capabilities granted by the container runtime. Note that this field
+                       cannot be set when spec.os.name is windows.
                     properties:
                       add:
-                        description: Represents a collection of objects that can be individually accessed by index.
+                        description: Added capabilities
                         items:
-                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                         type: array
                       drop:
-                        description: Represents a collection of objects that can be individually accessed by index.
+                        description: Removed capabilities
                         items:
-                          description: Represents text as a sequence of UTF-16 code units.
                           type: string
                         type: array
                     type: object
                   privileged:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Run container in privileged mode. Processes in privileged containers are
+                       essentially equivalent to root on the host. Defaults to false. Note that this
+                       field cannot be set when spec.os.name is windows.
                     type: boolean
                   procMount:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: |-
+                      procMount denotes the type of proc mount to use for the containers. The default
+                       is DefaultProcMount which uses the container runtime defaults for readonly paths
+                       and masked paths. This requires the ProcMountType feature flag to be enabled.
+                       Note that this field cannot be set when spec.os.name is windows.
                     type: string
                   readOnlyRootFilesystem:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Whether this container has a read-only root filesystem. Default is false. Note
+                       that this field cannot be set when spec.os.name is windows.
                     type: boolean
                   runAsGroup:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      The GID to run the entrypoint of the container process. Uses runtime default if
+                       unset. May also be set in PodSecurityContext.  If set in both SecurityContext
+                       and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                       Note that this field cannot be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   runAsNonRoot:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Indicates that the container must run as a non-root user. If true, the Kubelet
+                       will validate the image at runtime to ensure that it does not run as UID 0
+                       (root) and fail to start the container if it does. If unset or false, no such
+                       validation will be performed. May also be set in PodSecurityContext.  If set in
+                       both SecurityContext and PodSecurityContext, the value specified in
+                       SecurityContext takes precedence.
                     type: boolean
                   runAsUser:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      The UID to run the entrypoint of the container process. Defaults to user
+                       specified in image metadata if unspecified. May also be set in
+                       PodSecurityContext.  If set in both SecurityContext and PodSecurityContext, the
+                       value specified in SecurityContext takes precedence. Note that this field cannot
+                       be set when spec.os.name is windows.
                     format: int64
                     type: integer
                   seLinuxOptions:
-                    description: SELinuxOptions are the labels to be applied to the container
+                    description: |-
+                      The SELinux context to be applied to the container. If unspecified, the
+                       container runtime will allocate a random SELinux context for each container. 
+                       May also be set in PodSecurityContext.  If set in both SecurityContext and
+                       PodSecurityContext, the value specified in SecurityContext takes precedence.
+                       Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       level:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Level is SELinux level label that applies to the container.
                         type: string
                       role:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Role is a SELinux role label that applies to the container.
                         type: string
                       type:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: Type is a SELinux type label that applies to the container.
                         type: string
                       user:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: User is a SELinux user label that applies to the container.
                         type: string
                     type: object
                   seccompProfile:
                     description: |-
-                      SeccompProfile defines a pod/container's seccomp profile settings. Only one
-                       profile source may be set.
+                      The seccomp options to use by this container. If seccomp options are provided at
+                       both the pod & container level, the container options override the pod options.
+                       Note that this field cannot be set when spec.os.name is windows.
                     properties:
                       localhostProfile:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          localhostProfile indicates a profile defined in a file on the node should be
+                           used. The profile must be preconfigured on the node to work. Must be a
+                           descending path, relative to the kubelet's configured seccomp profile location.
+                           Must be set if type is "Localhost". Must NOT be set for any other type.
                         type: string
                       type:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          type indicates which kind of seccomp profile will be applied. Valid options are:
+
+                           Localhost - a profile defined in a file on the node should be used.
+                           RuntimeDefault - the container runtime default profile should be used.
+                           Unconfined - no profile should be applied.
                         type: string
                     type: object
                   windowsOptions:
-                    description: WindowsSecurityContextOptions contain Windows-specific options and credentials.
+                    description: |-
+                      The Windows specific settings applied to all containers. If unspecified, the
+                       options from the PodSecurityContext will be used. If set in both SecurityContext
+                       and PodSecurityContext, the value specified in SecurityContext takes precedence.
+                       Note that this field cannot be set when spec.os.name is linux.
                     properties:
                       gmsaCredentialSpec:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          GMSACredentialSpec is where the GMSA admission webhook
+                           (https://github.com/kubernetes-sigs/windows-gmsa) inlines the contents of the
+                           GMSA credential spec named by the GMSACredentialSpecName field.
                         type: string
                       gmsaCredentialSpecName:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: GMSACredentialSpecName is the name of the GMSA credential spec to use.
                         type: string
                       hostProcess:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          HostProcess determines if a container should be run as a 'Host Process'
+                           container. All of a Pod's containers must have the same effective HostProcess
+                           value (it is not allowed to have a mix of HostProcess containers and
+                           non-HostProcess containers). In addition, if HostProcess is true then
+                           HostNetwork must also be set to true.
                         type: boolean
                       runAsUserName:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: |-
+                          The UserName in Windows to run the entrypoint of the container process. Defaults
+                           to the user specified in image metadata if unspecified. May also be set in
+                           PodSecurityContext. If set in both SecurityContext and PodSecurityContext, the
+                           value specified in SecurityContext takes precedence.
                         type: string
                     type: object
                 type: object
               podAnnotations:
-                description: Represents a collection of keys and values.
+                description: Optionally set some extra pod annotations.
                 items:
-                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array
               podLabels:
-                description: Represents a collection of keys and values.
+                description: Optionally set some extra pod labels.
                 items:
-                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array
@@ -585,7 +516,7 @@ spec:
           status:
             properties:
               message:
-                description: Represents text as a sequence of UTF-16 code units.
+                description: The status message.
                 type: string
             type: object
         type: object

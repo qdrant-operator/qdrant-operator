@@ -8,6 +8,9 @@ using QdrantOperator.Models;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Represents a Qdrant cluster.
+    /// </summary>
     [KubernetesEntity(Group = KubeGroup, Kind = KubeKind, ApiVersion = KubeApiVersion, PluralName = KubePlural)]
     public class V1QdrantCluster : IKubernetesObject<V1ObjectMeta>, ISpec<V1QdrantCluster.V1QdrantClusterSpec>, IStatus<V1QdrantCluster.V1QdrantClusterStatus>
     {
@@ -40,17 +43,34 @@ namespace QdrantOperator
             Kind = KubeKind;
         }
 
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public string ApiVersion { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public string Kind { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public V1ObjectMeta Metadata { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public V1QdrantClusterSpec Spec { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public V1QdrantClusterStatus Status { get; set; }
 
+        /// <summary>
+        /// The Qdrant cluster spec.
+        /// </summary>
         public class V1QdrantClusterSpec
         {
             /// <summary>
@@ -64,7 +84,7 @@ namespace QdrantOperator
             public PersistenceSpec Persistence { get; set; } = new PersistenceSpec();
 
             /// <summary>
-            /// Thhe number of servers to deploy in the cluster.
+            /// The number of servers to deploy in the cluster.
             /// </summary>
             [DefaultValue(1)]
             public int Replicas { get; set; } = 1;
@@ -112,8 +132,14 @@ namespace QdrantOperator
             public Dictionary<string, string> PodLabels { get; set; } = new Dictionary<string, string>();
         }
 
+        /// <summary>
+        /// The status of the cluster.
+        /// </summary>
         public class V1QdrantClusterStatus
         {
+            /// <summary>
+            /// The status message.
+            /// </summary>
             public string Message { get; set; }
             
         }

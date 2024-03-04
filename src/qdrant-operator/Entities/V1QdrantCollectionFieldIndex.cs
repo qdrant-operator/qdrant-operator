@@ -12,6 +12,9 @@ using QdrantOperator.Models;
 namespace QdrantOperator
 
 {
+    /// <summary>
+    /// Represents a Qdrant Collection Field Index.
+    /// </summary>
     [KubernetesEntity(Group = KubeGroup, Kind = KubeKind, ApiVersion = KubeApiVersion, PluralName = KubePlural)]
     public class V1QdrantCollectionFieldIndex : IKubernetesObject<V1ObjectMeta>, ISpec<V1QdrantCollectionFieldIndex.V1QdrantCollectionFieldIndexSpec>
     {
@@ -44,26 +47,56 @@ namespace QdrantOperator
             Kind = KubeKind;
         }
 
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public string ApiVersion { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public string Kind { get; set; }
+
+        /// <summary>
         /// <inheritdoc/>
+        /// </summary>
         public V1ObjectMeta Metadata { get; set; }
+
+        /// <summary>
+        /// The spec for the field index.
+        /// </summary>
         public V1QdrantCollectionFieldIndexSpec Spec { get; set; }
 
+        /// <summary>
+        /// The spec.
+        /// </summary>
         public class V1QdrantCollectionFieldIndexSpec
         {
+            /// <summary>
+            /// The cluster that the index applies to.
+            /// </summary>
             public string Cluster { get; set; }
+
+            /// <summary>
+            /// The collection that the index applies to.
+            /// </summary>
             public string Collection { get; set; }
 
-
+            /// <summary>
+            /// The field name.
+            /// </summary>
             [Required]
             public string FieldName { get; set; }
 
+            /// <summary>
+            /// The payload schema type.
+            /// </summary>
             [Required]
             public PayloadSchemaType Type { get; set; }
 
+            /// <summary>
+            /// The text index type.
+            /// </summary>
             public TextIndexType TextIndexType { get; set; }
 
 

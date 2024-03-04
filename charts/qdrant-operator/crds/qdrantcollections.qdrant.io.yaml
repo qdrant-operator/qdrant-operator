@@ -15,26 +15,30 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Represents a Qdrant Collection.
         properties:
           spec:
+            description: The collection spec.
             properties:
               cluster:
-                description: Represents text as a sequence of UTF-16 code units.
+                description: The cluster that the collection should be created in.
                 type: string
               vectorSpec:
+                description: The vector spec.
                 properties:
                   namedVectors:
-                    description: Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
+                    description: A map of named vectors.
                     items:
                       properties:
                         name:
-                          description: Represents text as a sequence of UTF-16 code units.
+                          description: The name of the vector.
                           type: string
                         size:
-                          description: Represents a 64-bit signed integer.
+                          description: Size of a vectors used.
                           format: int64
                           type: integer
                         distance:
+                          description: Type of internal tags, build from payload Distance function types used to compare vectors
                           enum:
                           - Cosine
                           - Euclid
@@ -42,50 +46,63 @@ spec:
                           - Manhattan
                           type: string
                         hnswConfig:
+                          description: Custom params for HNSW index. If none - values from collection configuration are used.
                           properties:
                             m:
-                              description: Represents a value type that can be assigned null.
+                              description: |-
+                                Number of edges per node in the index graph. Larger the value - more
+                                 accurate the search, more space required.
                               exclusiveMinimum: false
                               format: int32
                               minimum: 0.0
                               type: integer
                             efConstruct:
-                              description: Represents a value type that can be assigned null.
+                              description: |-
+                                Number of neighbours to consider during the index building. Larger the
+                                 value - more accurate the search, more time required to build the index.
                               exclusiveMinimum: false
                               format: int32
                               minimum: 4.0
                               type: integer
                             fullScanThreshold:
-                              description: Represents a value type that can be assigned null.
+                              description: |-
+                                Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                                 If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                                 won't be used - in this case full-scan search should be preferred by query
+                                 planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                               exclusiveMinimum: false
                               format: int32
                               minimum: 10.0
                               type: integer
                             maxIndexingThreads:
-                              description: Represents a value type that can be assigned null.
+                              description: Number of parallel threads used for background index building. If 0 - auto selection.
                               exclusiveMinimum: false
                               format: int32
                               minimum: 0.0
                               type: integer
                             onDisk:
-                              description: Represents a value type that can be assigned null.
+                              description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                               type: boolean
                             payloadM:
-                              description: Represents a value type that can be assigned null.
+                              description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                               exclusiveMinimum: false
                               format: int32
                               minimum: 0.0
                               type: integer
                           type: object
                         quantizationConfig:
+                          description: Custom params for quantization. If none - values from collection configuration are used.c
                           properties:
                             scalarQuantizationConfig:
+                              description: The scalar quantization parameters
                               properties:
                                 type:
-                                  description: Represents text as a sequence of UTF-16 code units.
+                                  description: The scalar type. This is set to int8.
                                   type: string
                                 quantile:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    Quantile for quantization. Expected value range in [0.5, 1.0].
+                                     If not set - use the whole range of values
                                   exclusiveMaximum: false
                                   exclusiveMinimum: false
                                   format: float
@@ -93,12 +110,16 @@ spec:
                                   minimum: 0.5
                                   type: number
                                 alwaysRam:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    If true - quantized vectors always will be stored in RAM,
+                                     ignoring the config of main storage
                                   type: boolean
                               type: object
                             productQuantization:
+                              description: The product quantization parameters.
                               properties:
                                 compressionRatio:
+                                  description: The compression ratio.
                                   enum:
                                   - x4
                                   - x8
@@ -107,30 +128,36 @@ spec:
                                   - x64
                                   type: string
                                 alwaysRam:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    If true - quantized vectors always will be stored in RAM,
+                                     ignoring the config of main storage
                                   type: boolean
                               required:
                               - compressionRatio
                               type: object
                             binaryQuantization:
+                              description: The binary quantizxation parameters.
                               properties:
                                 alwaysRam:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    If true - quantized vectors always will be stored in RAM,
+                                     ignoring the config of main storage
                                   type: boolean
                               type: object
                           type: object
                         onDisk:
-                          description: Represents a value type that can be assigned null.
+                          description: 'If true, vectors are served from disk, improving RAM usage at the cost of latency Default: false'
                           type: boolean
                       required:
                       - name
                       type: object
                     type: array
                   size:
-                    description: Represents a 64-bit signed integer.
+                    description: Size of a vectors used.
                     format: int64
                     type: integer
                   distance:
+                    description: Type of internal tags, build from payload Distance function types used to compare vectors
                     enum:
                     - Cosine
                     - Euclid
@@ -138,50 +165,63 @@ spec:
                     - Manhattan
                     type: string
                   hnswConfig:
+                    description: Custom params for HNSW index. If none - values from collection configuration are used.
                     properties:
                       m:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Number of edges per node in the index graph. Larger the value - more
+                           accurate the search, more space required.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       efConstruct:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Number of neighbours to consider during the index building. Larger the
+                           value - more accurate the search, more time required to build the index.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 4.0
                         type: integer
                       fullScanThreshold:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                           If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                           won't be used - in this case full-scan search should be preferred by query
+                           planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                         exclusiveMinimum: false
                         format: int32
                         minimum: 10.0
                         type: integer
                       maxIndexingThreads:
-                        description: Represents a value type that can be assigned null.
+                        description: Number of parallel threads used for background index building. If 0 - auto selection.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       onDisk:
-                        description: Represents a value type that can be assigned null.
+                        description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                         type: boolean
                       payloadM:
-                        description: Represents a value type that can be assigned null.
+                        description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                     type: object
                   quantizationConfig:
+                    description: Custom params for quantization. If none - values from collection configuration are used.c
                     properties:
                       scalarQuantizationConfig:
+                        description: The scalar quantization parameters
                         properties:
                           type:
-                            description: Represents text as a sequence of UTF-16 code units.
+                            description: The scalar type. This is set to int8.
                             type: string
                           quantile:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              Quantile for quantization. Expected value range in [0.5, 1.0].
+                               If not set - use the whole range of values
                             exclusiveMaximum: false
                             exclusiveMinimum: false
                             format: float
@@ -189,12 +229,16 @@ spec:
                             minimum: 0.5
                             type: number
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         type: object
                       productQuantization:
+                        description: The product quantization parameters.
                         properties:
                           compressionRatio:
+                            description: The compression ratio.
                             enum:
                             - x4
                             - x8
@@ -203,164 +247,222 @@ spec:
                             - x64
                             type: string
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         required:
                         - compressionRatio
                         type: object
                       binaryQuantization:
+                        description: The binary quantizxation parameters.
                         properties:
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         type: object
                     type: object
                   onDisk:
-                    description: Represents a value type that can be assigned null.
+                    description: 'If true, vectors are served from disk, improving RAM usage at the cost of latency Default: false'
                     type: boolean
                 type: object
               shardNumber:
-                description: Represents a 32-bit signed integer.
+                description: |-
+                  For auto sharding: Number of shards in collection. - Default is 1 for standalone,
+                   otherwise equal to the number of nodes - Minimum is 1 For custom sharding: Number of
+                   shards in collection per shard group. - Default is 1, meaning that each shard key will
+                   be mapped to a single shard - Minimum is 1
                 exclusiveMinimum: false
                 format: int32
                 minimum: 4.0
                 type: integer
               shardingMethod:
-                description: Represents a value type that can be assigned null.
+                description: |-
+                  Sharding method Default is Auto - points are distributed across all available shards Custom -
+                   points are distributed across shards according to shard key
                 enum:
                 - auto
                 - custom
                 type: string
               replicationFactor:
-                description: Represents a 32-bit signed integer.
+                description: Number of shards replicas. Default is 1 Minimum is 1
                 exclusiveMinimum: false
                 format: int32
                 minimum: 1.0
                 type: integer
               writeConsistencyFactor:
-                description: Represents a 32-bit signed integer.
+                description: |-
+                  Defines how many replicas should apply the operation for us to consider it successful. Increasing
+                   this number will make the collection more resilient to inconsistencies, but will also make it fail
+                   if not enough replicas are available. Does not have any performance impact.
                 exclusiveMinimum: false
                 format: int32
                 minimum: 1.0
                 type: integer
               onDiskPayload:
-                description: Represents a value type that can be assigned null.
+                description: |-
+                  If true - point's payload will not be stored in memory. It will be read from the disk every time it
+                   is requested. This setting saves RAM by (slightly) increasing the response time. Note: those payload
+                   values that are involved in filtering and are indexed - remain in RAM.
                 type: boolean
               hnswConfig:
+                description: Custom params for HNSW index. If none - values from service configuration file are used.
                 properties:
                   m:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Number of edges per node in the index graph. Larger the value - more
+                       accurate the search, more space required.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   efConstruct:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Number of neighbours to consider during the index building. Larger the
+                       value - more accurate the search, more time required to build the index.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 4.0
                     type: integer
                   fullScanThreshold:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                       If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                       won't be used - in this case full-scan search should be preferred by query
+                       planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                     exclusiveMinimum: false
                     format: int32
                     minimum: 10.0
                     type: integer
                   maxIndexingThreads:
-                    description: Represents a value type that can be assigned null.
+                    description: Number of parallel threads used for background index building. If 0 - auto selection.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   onDisk:
-                    description: Represents a value type that can be assigned null.
+                    description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                     type: boolean
                   payloadM:
-                    description: Represents a value type that can be assigned null.
+                    description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                 type: object
               walConfig:
+                description: Custom params for WAL. If none - values from service configuration file are used.
                 properties:
                   walCapacityMb:
-                    description: Represents a value type that can be assigned null.
+                    description: Size of a single WAL segment in MB
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   walSegmentsAhead:
-                    description: Represents a value type that can be assigned null.
+                    description: Number of WAL segments to create ahead of actually used ones
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                 type: object
               optimizersConfig:
+                description: Custom params for Optimizers. If none - values from service configuration file are used.
                 properties:
                   deletedThreshold:
-                    description: Represents a value type that can be assigned null.
+                    description: The minimal fraction of deleted vectors in a segment, required to perform segment optimization
                     format: double
                     type: number
                   vacuumMinVectorNumber:
-                    description: Represents a value type that can be assigned null.
+                    description: The minimal number of vectors in a segment, required to perform segment optimization
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   defaultSegmentNumber:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Target amount of segments optimizer will try to keep. Real amount of segments may vary depending
+                       on multiple parameters: - Amount of stored points - Current write RPS
+
+                       It is recommended to select default number of segments as a factor of the number of search threads,
+                       so that each segment would be handled evenly by one of the threads If default_segment_number = 0,
+                       will be automatically selected by the number of available CPUs
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxSegmentSize:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Do not create segments larger this size (in kilobytes). Large segments might require disproportionately
+                       long indexation times, therefore it makes sense to limit the size of segments.
+
+                       If indexation speed have more priority for your - make this parameter lower. If search speed is more
+                       important - make this parameter higher. Note: 1Kb = 1 vector of size 256
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   memmapThreshold:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Maximum size (in kilobytes) of vectors to store in-memory per segment. Segments larger than this threshold will
+                       be stored as read-only memmaped file.
+
+                       Memmap storage is disabled by default, to enable it, set this threshold to a reasonable value.
+
+                       To disable memmap storage, set this to 0.
+                      1Kb = 1 vector of size 256
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   indexingThreshold:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Maximum size (in kilobytes) of vectors allowed for plain index, exceeding this threshold will enable vector
+                       indexing
+
+                       Default value is 20,000, based on https://github.com/google-research/google-research/blob/master/scann/docs/algorithms.md.
+
+                       To disable vector indexing, set to 0.
+                      1Kb = 1 vector of size 256
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   flushIntervalSec:
-                    description: Represents a value type that can be assigned null.
+                    description: Minimum interval between forced flushes.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxOptimizationThreads:
-                    description: Represents a value type that can be assigned null.
+                    description: Maximum available threads for optimization workers.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                 type: object
               initFrom:
+                description: Specify other collection to copy data from.
                 properties:
                   collection:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The name of the collection to initialize from.
                     type: string
                 type: object
               quantizationConfig:
+                description: Quantization parameters. If none - quantization is disabled.
                 properties:
                   scalarQuantizationConfig:
+                    description: The scalar quantization parameters
                     properties:
                       type:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: The scalar type. This is set to int8.
                         type: string
                       quantile:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Quantile for quantization. Expected value range in [0.5, 1.0].
+                           If not set - use the whole range of values
                         exclusiveMaximum: false
                         exclusiveMinimum: false
                         format: float
@@ -368,12 +470,16 @@ spec:
                         minimum: 0.5
                         type: number
                       alwaysRam:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          If true - quantized vectors always will be stored in RAM,
+                           ignoring the config of main storage
                         type: boolean
                     type: object
                   productQuantization:
+                    description: The product quantization parameters.
                     properties:
                       compressionRatio:
+                        description: The compression ratio.
                         enum:
                         - x4
                         - x8
@@ -382,39 +488,48 @@ spec:
                         - x64
                         type: string
                       alwaysRam:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          If true - quantized vectors always will be stored in RAM,
+                           ignoring the config of main storage
                         type: boolean
                     required:
                     - compressionRatio
                     type: object
                   binaryQuantization:
+                    description: The binary quantizxation parameters.
                     properties:
                       alwaysRam:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          If true - quantized vectors always will be stored in RAM,
+                           ignoring the config of main storage
                         type: boolean
                     type: object
                 type: object
               sparseVectors:
-                description: Represents a collection of keys and values.
+                description: Sparse vector data config.
                 items:
-                  description: Defines a key/value pair that can be set or retrieved.
                   properties:
                     key:
-                      description: Represents text as a sequence of UTF-16 code units.
+                      description: Gets the key in the key/value pair.
                       type: string
                     value:
                       description: Gets the value in the key/value pair.
                       properties:
                         index:
+                          description: The index parameters.
                           properties:
                             fullScanThreshold:
-                              description: Represents a value type that can be assigned null.
+                              description: |-
+                                Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                                 If payload chunk is smaller than full_scan_threshold_kb additional indexing won't
+                                 be used - in this case full-scan search should be preferred by query planner and
+                                 additional indexing is not required. Note: 1Kb = 1 vector of size 256
                               exclusiveMinimum: false
                               format: int32
                               minimum: 0.0
                               type: integer
                             onDisk:
-                              description: Represents a value type that can be assigned null.
+                              description: Store the index on disk. If set to false, the index will be stored in RAM. Defaults to false.
                               type: boolean
                           type: object
                       type: object
@@ -422,26 +537,30 @@ spec:
                 type: array
             type: object
           status:
+            description: The status of the collection.
             properties:
               currentSpec:
+                description: The currently applied spec.
                 properties:
                   cluster:
-                    description: Represents text as a sequence of UTF-16 code units.
+                    description: The cluster that the collection should be created in.
                     type: string
                   vectorSpec:
+                    description: The vector spec.
                     properties:
                       namedVectors:
-                        description: Represents a strongly typed list of objects that can be accessed by index. Provides methods to search, sort, and manipulate lists.
+                        description: A map of named vectors.
                         items:
                           properties:
                             name:
-                              description: Represents text as a sequence of UTF-16 code units.
+                              description: The name of the vector.
                               type: string
                             size:
-                              description: Represents a 64-bit signed integer.
+                              description: Size of a vectors used.
                               format: int64
                               type: integer
                             distance:
+                              description: Type of internal tags, build from payload Distance function types used to compare vectors
                               enum:
                               - Cosine
                               - Euclid
@@ -449,50 +568,63 @@ spec:
                               - Manhattan
                               type: string
                             hnswConfig:
+                              description: Custom params for HNSW index. If none - values from collection configuration are used.
                               properties:
                                 m:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    Number of edges per node in the index graph. Larger the value - more
+                                     accurate the search, more space required.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 efConstruct:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    Number of neighbours to consider during the index building. Larger the
+                                     value - more accurate the search, more time required to build the index.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 4.0
                                   type: integer
                                 fullScanThreshold:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                                     If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                                     won't be used - in this case full-scan search should be preferred by query
+                                     planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 10.0
                                   type: integer
                                 maxIndexingThreads:
-                                  description: Represents a value type that can be assigned null.
+                                  description: Number of parallel threads used for background index building. If 0 - auto selection.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 onDisk:
-                                  description: Represents a value type that can be assigned null.
+                                  description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                                   type: boolean
                                 payloadM:
-                                  description: Represents a value type that can be assigned null.
+                                  description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                               type: object
                             quantizationConfig:
+                              description: Custom params for quantization. If none - values from collection configuration are used.c
                               properties:
                                 scalarQuantizationConfig:
+                                  description: The scalar quantization parameters
                                   properties:
                                     type:
-                                      description: Represents text as a sequence of UTF-16 code units.
+                                      description: The scalar type. This is set to int8.
                                       type: string
                                     quantile:
-                                      description: Represents a value type that can be assigned null.
+                                      description: |-
+                                        Quantile for quantization. Expected value range in [0.5, 1.0].
+                                         If not set - use the whole range of values
                                       exclusiveMaximum: false
                                       exclusiveMinimum: false
                                       format: float
@@ -500,12 +632,16 @@ spec:
                                       minimum: 0.5
                                       type: number
                                     alwaysRam:
-                                      description: Represents a value type that can be assigned null.
+                                      description: |-
+                                        If true - quantized vectors always will be stored in RAM,
+                                         ignoring the config of main storage
                                       type: boolean
                                   type: object
                                 productQuantization:
+                                  description: The product quantization parameters.
                                   properties:
                                     compressionRatio:
+                                      description: The compression ratio.
                                       enum:
                                       - x4
                                       - x8
@@ -514,30 +650,36 @@ spec:
                                       - x64
                                       type: string
                                     alwaysRam:
-                                      description: Represents a value type that can be assigned null.
+                                      description: |-
+                                        If true - quantized vectors always will be stored in RAM,
+                                         ignoring the config of main storage
                                       type: boolean
                                   required:
                                   - compressionRatio
                                   type: object
                                 binaryQuantization:
+                                  description: The binary quantizxation parameters.
                                   properties:
                                     alwaysRam:
-                                      description: Represents a value type that can be assigned null.
+                                      description: |-
+                                        If true - quantized vectors always will be stored in RAM,
+                                         ignoring the config of main storage
                                       type: boolean
                                   type: object
                               type: object
                             onDisk:
-                              description: Represents a value type that can be assigned null.
+                              description: 'If true, vectors are served from disk, improving RAM usage at the cost of latency Default: false'
                               type: boolean
                           required:
                           - name
                           type: object
                         type: array
                       size:
-                        description: Represents a 64-bit signed integer.
+                        description: Size of a vectors used.
                         format: int64
                         type: integer
                       distance:
+                        description: Type of internal tags, build from payload Distance function types used to compare vectors
                         enum:
                         - Cosine
                         - Euclid
@@ -545,50 +687,63 @@ spec:
                         - Manhattan
                         type: string
                       hnswConfig:
+                        description: Custom params for HNSW index. If none - values from collection configuration are used.
                         properties:
                           m:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              Number of edges per node in the index graph. Larger the value - more
+                               accurate the search, more space required.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
                             type: integer
                           efConstruct:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              Number of neighbours to consider during the index building. Larger the
+                               value - more accurate the search, more time required to build the index.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 4.0
                             type: integer
                           fullScanThreshold:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                               If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                               won't be used - in this case full-scan search should be preferred by query
+                               planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                             exclusiveMinimum: false
                             format: int32
                             minimum: 10.0
                             type: integer
                           maxIndexingThreads:
-                            description: Represents a value type that can be assigned null.
+                            description: Number of parallel threads used for background index building. If 0 - auto selection.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
                             type: integer
                           onDisk:
-                            description: Represents a value type that can be assigned null.
+                            description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                             type: boolean
                           payloadM:
-                            description: Represents a value type that can be assigned null.
+                            description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                             exclusiveMinimum: false
                             format: int32
                             minimum: 0.0
                             type: integer
                         type: object
                       quantizationConfig:
+                        description: Custom params for quantization. If none - values from collection configuration are used.c
                         properties:
                           scalarQuantizationConfig:
+                            description: The scalar quantization parameters
                             properties:
                               type:
-                                description: Represents text as a sequence of UTF-16 code units.
+                                description: The scalar type. This is set to int8.
                                 type: string
                               quantile:
-                                description: Represents a value type that can be assigned null.
+                                description: |-
+                                  Quantile for quantization. Expected value range in [0.5, 1.0].
+                                   If not set - use the whole range of values
                                 exclusiveMaximum: false
                                 exclusiveMinimum: false
                                 format: float
@@ -596,12 +751,16 @@ spec:
                                 minimum: 0.5
                                 type: number
                               alwaysRam:
-                                description: Represents a value type that can be assigned null.
+                                description: |-
+                                  If true - quantized vectors always will be stored in RAM,
+                                   ignoring the config of main storage
                                 type: boolean
                             type: object
                           productQuantization:
+                            description: The product quantization parameters.
                             properties:
                               compressionRatio:
+                                description: The compression ratio.
                                 enum:
                                 - x4
                                 - x8
@@ -610,164 +769,222 @@ spec:
                                 - x64
                                 type: string
                               alwaysRam:
-                                description: Represents a value type that can be assigned null.
+                                description: |-
+                                  If true - quantized vectors always will be stored in RAM,
+                                   ignoring the config of main storage
                                 type: boolean
                             required:
                             - compressionRatio
                             type: object
                           binaryQuantization:
+                            description: The binary quantizxation parameters.
                             properties:
                               alwaysRam:
-                                description: Represents a value type that can be assigned null.
+                                description: |-
+                                  If true - quantized vectors always will be stored in RAM,
+                                   ignoring the config of main storage
                                 type: boolean
                             type: object
                         type: object
                       onDisk:
-                        description: Represents a value type that can be assigned null.
+                        description: 'If true, vectors are served from disk, improving RAM usage at the cost of latency Default: false'
                         type: boolean
                     type: object
                   shardNumber:
-                    description: Represents a 32-bit signed integer.
+                    description: |-
+                      For auto sharding: Number of shards in collection. - Default is 1 for standalone,
+                       otherwise equal to the number of nodes - Minimum is 1 For custom sharding: Number of
+                       shards in collection per shard group. - Default is 1, meaning that each shard key will
+                       be mapped to a single shard - Minimum is 1
                     exclusiveMinimum: false
                     format: int32
                     minimum: 4.0
                     type: integer
                   shardingMethod:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      Sharding method Default is Auto - points are distributed across all available shards Custom -
+                       points are distributed across shards according to shard key
                     enum:
                     - auto
                     - custom
                     type: string
                   replicationFactor:
-                    description: Represents a 32-bit signed integer.
+                    description: Number of shards replicas. Default is 1 Minimum is 1
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   writeConsistencyFactor:
-                    description: Represents a 32-bit signed integer.
+                    description: |-
+                      Defines how many replicas should apply the operation for us to consider it successful. Increasing
+                       this number will make the collection more resilient to inconsistencies, but will also make it fail
+                       if not enough replicas are available. Does not have any performance impact.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 1.0
                     type: integer
                   onDiskPayload:
-                    description: Represents a value type that can be assigned null.
+                    description: |-
+                      If true - point's payload will not be stored in memory. It will be read from the disk every time it
+                       is requested. This setting saves RAM by (slightly) increasing the response time. Note: those payload
+                       values that are involved in filtering and are indexed - remain in RAM.
                     type: boolean
                   hnswConfig:
+                    description: Custom params for HNSW index. If none - values from service configuration file are used.
                     properties:
                       m:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Number of edges per node in the index graph. Larger the value - more
+                           accurate the search, more space required.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       efConstruct:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Number of neighbours to consider during the index building. Larger the
+                           value - more accurate the search, more time required to build the index.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 4.0
                         type: integer
                       fullScanThreshold:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                           If payload chunk is smaller than full_scan_threshold_kb additional indexing
+                           won't be used - in this case full-scan search should be preferred by query
+                           planner and additional indexing is not required. Note: 1Kb = 1 vector of size 256
                         exclusiveMinimum: false
                         format: int32
                         minimum: 10.0
                         type: integer
                       maxIndexingThreads:
-                        description: Represents a value type that can be assigned null.
+                        description: Number of parallel threads used for background index building. If 0 - auto selection.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       onDisk:
-                        description: Represents a value type that can be assigned null.
+                        description: 'Store HNSW index on disk. If set to false, the index will be stored in RAM. Default: false'
                         type: boolean
                       payloadM:
-                        description: Represents a value type that can be assigned null.
+                        description: Custom M param for additional payload-aware HNSW links. If not set, default M will be used.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                     type: object
                   walConfig:
+                    description: Custom params for WAL. If none - values from service configuration file are used.
                     properties:
                       walCapacityMb:
-                        description: Represents a value type that can be assigned null.
+                        description: Size of a single WAL segment in MB
                         exclusiveMinimum: false
                         format: int32
                         minimum: 1.0
                         type: integer
                       walSegmentsAhead:
-                        description: Represents a value type that can be assigned null.
+                        description: Number of WAL segments to create ahead of actually used ones
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                     type: object
                   optimizersConfig:
+                    description: Custom params for Optimizers. If none - values from service configuration file are used.
                     properties:
                       deletedThreshold:
-                        description: Represents a value type that can be assigned null.
+                        description: The minimal fraction of deleted vectors in a segment, required to perform segment optimization
                         format: double
                         type: number
                       vacuumMinVectorNumber:
-                        description: Represents a value type that can be assigned null.
+                        description: The minimal number of vectors in a segment, required to perform segment optimization
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       defaultSegmentNumber:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Target amount of segments optimizer will try to keep. Real amount of segments may vary depending
+                           on multiple parameters: - Amount of stored points - Current write RPS
+
+                           It is recommended to select default number of segments as a factor of the number of search threads,
+                           so that each segment would be handled evenly by one of the threads If default_segment_number = 0,
+                           will be automatically selected by the number of available CPUs
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       maxSegmentSize:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Do not create segments larger this size (in kilobytes). Large segments might require disproportionately
+                           long indexation times, therefore it makes sense to limit the size of segments.
+
+                           If indexation speed have more priority for your - make this parameter lower. If search speed is more
+                           important - make this parameter higher. Note: 1Kb = 1 vector of size 256
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       memmapThreshold:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Maximum size (in kilobytes) of vectors to store in-memory per segment. Segments larger than this threshold will
+                           be stored as read-only memmaped file.
+
+                           Memmap storage is disabled by default, to enable it, set this threshold to a reasonable value.
+
+                           To disable memmap storage, set this to 0.
+                          1Kb = 1 vector of size 256
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       indexingThreshold:
-                        description: Represents a value type that can be assigned null.
+                        description: |-
+                          Maximum size (in kilobytes) of vectors allowed for plain index, exceeding this threshold will enable vector
+                           indexing
+
+                           Default value is 20,000, based on https://github.com/google-research/google-research/blob/master/scann/docs/algorithms.md.
+
+                           To disable vector indexing, set to 0.
+                          1Kb = 1 vector of size 256
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       flushIntervalSec:
-                        description: Represents a value type that can be assigned null.
+                        description: Minimum interval between forced flushes.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                       maxOptimizationThreads:
-                        description: Represents a value type that can be assigned null.
+                        description: Maximum available threads for optimization workers.
                         exclusiveMinimum: false
                         format: int32
                         minimum: 0.0
                         type: integer
                     type: object
                   initFrom:
+                    description: Specify other collection to copy data from.
                     properties:
                       collection:
-                        description: Represents text as a sequence of UTF-16 code units.
+                        description: The name of the collection to initialize from.
                         type: string
                     type: object
                   quantizationConfig:
+                    description: Quantization parameters. If none - quantization is disabled.
                     properties:
                       scalarQuantizationConfig:
+                        description: The scalar quantization parameters
                         properties:
                           type:
-                            description: Represents text as a sequence of UTF-16 code units.
+                            description: The scalar type. This is set to int8.
                             type: string
                           quantile:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              Quantile for quantization. Expected value range in [0.5, 1.0].
+                               If not set - use the whole range of values
                             exclusiveMaximum: false
                             exclusiveMinimum: false
                             format: float
@@ -775,12 +992,16 @@ spec:
                             minimum: 0.5
                             type: number
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         type: object
                       productQuantization:
+                        description: The product quantization parameters.
                         properties:
                           compressionRatio:
+                            description: The compression ratio.
                             enum:
                             - x4
                             - x8
@@ -789,39 +1010,48 @@ spec:
                             - x64
                             type: string
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         required:
                         - compressionRatio
                         type: object
                       binaryQuantization:
+                        description: The binary quantizxation parameters.
                         properties:
                           alwaysRam:
-                            description: Represents a value type that can be assigned null.
+                            description: |-
+                              If true - quantized vectors always will be stored in RAM,
+                               ignoring the config of main storage
                             type: boolean
                         type: object
                     type: object
                   sparseVectors:
-                    description: Represents a collection of keys and values.
+                    description: Sparse vector data config.
                     items:
-                      description: Defines a key/value pair that can be set or retrieved.
                       properties:
                         key:
-                          description: Represents text as a sequence of UTF-16 code units.
+                          description: Gets the key in the key/value pair.
                           type: string
                         value:
                           description: Gets the value in the key/value pair.
                           properties:
                             index:
+                              description: The index parameters.
                               properties:
                                 fullScanThreshold:
-                                  description: Represents a value type that can be assigned null.
+                                  description: |-
+                                    Minimal size (in kilobytes) of vectors for additional payload-based indexing.
+                                     If payload chunk is smaller than full_scan_threshold_kb additional indexing won't
+                                     be used - in this case full-scan search should be preferred by query planner and
+                                     additional indexing is not required. Note: 1Kb = 1 vector of size 256
                                   exclusiveMinimum: false
                                   format: int32
                                   minimum: 0.0
                                   type: integer
                                 onDisk:
-                                  description: Represents a value type that can be assigned null.
+                                  description: Store the index on disk. If set to false, the index will be stored in RAM. Defaults to false.
                                   type: boolean
                               type: object
                           type: object

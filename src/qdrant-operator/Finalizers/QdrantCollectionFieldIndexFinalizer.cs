@@ -15,10 +15,19 @@ using Qdrant.Client;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Finalizes qdrant field index resources.
+    /// </summary>
     public class QdrantCollectionFieldIndexFinalizer : ResourceFinalizerBase<V1QdrantCollectionFieldIndex>
     {
         private readonly IKubernetes k8s;
         private readonly ILogger<QdrantCollectionFieldIndexController> logger;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="logger"></param>
         public QdrantCollectionFieldIndexFinalizer(
             IKubernetes k8s,
             ILogger<QdrantCollectionFieldIndexController> logger)
@@ -26,6 +35,12 @@ namespace QdrantOperator
             this.k8s = k8s;
             this.logger = logger;
         }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
 
         public override async Task FinalizeAsync(V1QdrantCollectionFieldIndex resource)
         {
@@ -50,6 +65,12 @@ namespace QdrantOperator
             await FinalizeCollectionFieldIndexAsync(qdrantClient, resource);
         }
 
+        /// <summary>
+        /// Finalize the index.
+        /// </summary>
+        /// <param name="qdrantClient"></param>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task FinalizeCollectionFieldIndexAsync(QdrantClient qdrantClient, V1QdrantCollectionFieldIndex resource)
         {
             try

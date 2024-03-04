@@ -15,19 +15,22 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
+        description: Represents a Qdrant Collection Field Index.
         properties:
           spec:
+            description: The spec for the field index.
             properties:
               cluster:
-                description: Represents text as a sequence of UTF-16 code units.
+                description: The cluster that the index applies to.
                 type: string
               collection:
-                description: Represents text as a sequence of UTF-16 code units.
+                description: The collection that the index applies to.
                 type: string
               fieldName:
-                description: Represents text as a sequence of UTF-16 code units.
+                description: The field name.
                 type: string
               type:
+                description: The payload schema type.
                 enum:
                 - keyword
                 - integer
@@ -37,8 +40,12 @@ spec:
                 - bool
                 type: string
               textIndexType:
+                description: The text index type.
                 properties:
                   tokenizer:
+                    description: |-
+                      Full-text index configuration is a bit more complex than other indexes, as you can specify the tokenization parameters.
+                       Tokenization is the process of splitting a string into tokens, which are then indexed in the inverted index.
                     enum:
                     - prefix
                     - whitespace
@@ -46,19 +53,19 @@ spec:
                     - multilingual
                     type: string
                   minTokenLen:
-                    description: Represents a value type that can be assigned null.
+                    description: The minimum token length.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   maxTokenLen:
-                    description: Represents a value type that can be assigned null.
+                    description: The maximum token length.
                     exclusiveMinimum: false
                     format: int32
                     minimum: 0.0
                     type: integer
                   loweracase:
-                    description: Represents a value type that can be assigned null.
+                    description: Whether to convert to lowercase.
                     type: boolean
                 type: object
             required:

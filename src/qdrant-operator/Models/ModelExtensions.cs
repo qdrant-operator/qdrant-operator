@@ -2,7 +2,7 @@ using System;
 
 namespace QdrantOperator.Extensions
 {
-    public static class ModelExtensions
+    internal static class ModelExtensions
     {
         public static Qdrant.Client.Grpc.ShardingMethod ToGrpcShardingMethod(this Models.ShardingMethod value)
         {

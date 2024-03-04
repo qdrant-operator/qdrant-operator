@@ -16,11 +16,21 @@ using Qdrant.Client;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Finalizes <see cref="V1QdrantCollection"/> resources.
+    /// </summary>
     public class QdrantCollectionFinalizer: ResourceFinalizerBase<V1QdrantCollection>
     {
         private readonly IKubernetes                         k8s;
         private readonly ILogger<QdrantCollectionController> logger;
         private readonly ILoggerFactory                      loggerFactory;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="logger"></param>
+        /// <param name="loggerFactory"></param>
         public QdrantCollectionFinalizer(
             IKubernetes                         k8s,
             ILogger<QdrantCollectionController> logger,
@@ -31,6 +41,11 @@ namespace QdrantOperator
             this.loggerFactory = loggerFactory;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public override async Task FinalizeAsync(V1QdrantCollection resource)
         {
             await SyncContext.Clear;
@@ -64,6 +79,12 @@ namespace QdrantOperator
             await FinalizeCollectionAsync(qdrantClient, resource);
         }
 
+        /// <summary>
+        /// Finalizes the collection.
+        /// </summary>
+        /// <param name="qdrantClient"></param>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task FinalizeCollectionAsync(QdrantClient qdrantClient, V1QdrantCollection resource)
         {
             await SyncContext.Clear;

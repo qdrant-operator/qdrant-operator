@@ -16,10 +16,19 @@ using QdrantOperator.Entities;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Finalizes a qdrant cluster resource.
+    /// </summary>
     public class QdrantClusterFinalizer : ResourceFinalizerBase<V1QdrantCluster>
     {
         private readonly IKubernetes                      k8s;
         private readonly ILogger<QdrantClusterController> logger;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="logger"></param>
         public QdrantClusterFinalizer(
             IKubernetes                      k8s,
             ILogger<QdrantClusterController> logger)
@@ -28,6 +37,11 @@ namespace QdrantOperator
             this.logger = logger;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public override async Task FinalizeAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -44,6 +58,11 @@ namespace QdrantOperator
             logger.LogInformationEx(() => $"FINALIZED: {resource.Name()}");
         }
 
+        /// <summary>
+        /// Deletes the statefulset for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteStatefulsetAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -72,6 +91,12 @@ namespace QdrantOperator
             }
 
         }
+
+        /// <summary>
+        /// Deletes the service for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteServiceAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -100,6 +125,12 @@ namespace QdrantOperator
             }
 
         }
+
+        /// <summary>
+        /// Deletes the headless service for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteHeadlessServiceAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -128,6 +159,12 @@ namespace QdrantOperator
             }
 
         }
+
+        /// <summary>
+        /// Deletes the configmap for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteConfigMapAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -156,6 +193,12 @@ namespace QdrantOperator
             }
 
         }
+
+        /// <summary>
+        /// Deletes the service account for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteServiceAccountAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -184,6 +227,12 @@ namespace QdrantOperator
             }
 
         }
+
+        /// <summary>
+        /// Deletes any service monitors for the resource.
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public async Task DeleteServiceMonitorAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
