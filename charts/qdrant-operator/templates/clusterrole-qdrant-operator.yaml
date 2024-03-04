@@ -14,25 +14,29 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - apiextensions.k8s.io
-  resources:
-  - customresourcedefinitions
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - apps
   resources:
   - statefulsets
   verbs:
   - '*'
 - apiGroups:
-  - coordination.k8s.io
+  - integreatly.org
   resources:
-  - leases
+  - grafanadashboards
   verbs:
-  - '*'
+  - create
+  - get
+  - list
+  - update
+- apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - get
+  - list
+  - update
 - apiGroups:
   - qdrant.io
   resources:
