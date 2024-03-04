@@ -53,14 +53,63 @@ namespace QdrantOperator
 
         public class V1QdrantClusterSpec
         {
+            /// <summary>
+            /// Options for defining the container image.
+            /// </summary>
             public ImageSpec Image { get; set; } = new ImageSpec();
 
+            /// <summary>
+            /// Persistence options.
+            /// </summary>
             public PersistenceSpec Persistence { get; set; } = new PersistenceSpec();
-            
+
+            /// <summary>
+            /// Thhe number of servers to deploy in the cluster.
+            /// </summary>
             [DefaultValue(1)]
             public int Replicas { get; set; } = 1;
+
+            /// <summary>
+            /// Metrics related options.
+            /// </summary>
             public MetricsOptions Metrics { get; set; } = new MetricsOptions();
-            public Dictionary<string, string> NodeSelector { get; set; }
+
+            /// <summary>
+            /// Where to put the servers.
+            /// </summary>
+            public Dictionary<string, string> NodeSelector { get; set; } = new Dictionary<string, string>();
+
+            /// <summary>
+            /// Whether to add an antiAffinity rule to the statefulset. Enabling this will ensure
+            /// that only 1 qdrant container will be deployed per kubernetes host.
+            /// </summary>
+            [DefaultValue(true)]
+            public bool AntiAffinity { get; set; } = true;
+
+            /// <summary>
+            /// The resource requirements for each qdrant server.
+            /// </summary>
+            public V1ResourceRequirements Resources { get; set; } = new V1ResourceRequirements();
+
+            /// <summary>
+            /// The pod security context options.
+            /// </summary>
+            public V1PodSecurityContext PodSecurityContext { get; set; }
+
+            /// <summary>
+            /// The container security context options.
+            /// </summary>
+            public V1SecurityContext SecurityContext { get; set; }
+
+            /// <summary>
+            /// Optionally set some extra pod annotations.
+            /// </summary>
+            public Dictionary<string, string> PodAnnotations { get; set; } = new Dictionary<string, string>();
+
+            /// <summary>
+            /// Optionally set some extra pod labels.
+            /// </summary>
+            public Dictionary<string, string> PodLabels { get; set; } = new Dictionary<string, string>();
         }
 
         public class V1QdrantClusterStatus
