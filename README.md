@@ -61,9 +61,9 @@ spec:
   cluster: my-cluster
   collection: my-collection
   fieldName: my-field
-  type: Text
+  type: text
   textIndexType:
-    tokenizer: Word
+    tokenizer: word
     minTokenLen: 1
     maxTokenLen: 10
     loweracase: true
