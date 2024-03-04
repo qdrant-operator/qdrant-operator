@@ -32,6 +32,8 @@ namespace QdrantOperator
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1PersistentVolumeClaim>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
+    [RbacRule<V1ServiceMonitor>(Scope = EntityScope.Cluster, Verbs = RbacVerb.Get | RbacVerb.List | RbacVerb.Create | RbacVerb.Update)]
+    [RbacRule<V1GrafanaDashboard>(Scope = EntityScope.Cluster, Verbs = RbacVerb.Get | RbacVerb.List | RbacVerb.Create | RbacVerb.Update)]
     [DependentResource<V1StatefulSet>]
     [DependentResource<V1ConfigMap>]
     [DependentResource<V1Service>]
@@ -78,12 +80,14 @@ namespace QdrantOperator
             
             logger.LogInformation($"RECONCILING: {resource.Name()}");
 
-            labels = new Dictionary<string, string>();
-            labels.Add("app", resource.GetFullName());
-            labels.Add("app.kubernetes.io/instance", resource.Metadata.Name);
-            labels.Add("app.kubernetes.io/name", resource.Metadata.Name);
-            labels.Add("app.kubernetes.io/version", resource.Spec.Image.Tag);
-            labels.Add(Constants.ManagedByLabel, Constants.ManagedBy);
+            labels = new Dictionary<string, string>
+            {
+                { Labels.App,               resource.GetFullName() },
+                { Labels.Instance,          resource.Metadata.Name },
+                { Labels.Name,              resource.Metadata.Name },
+                { Labels.Version,           resource.Spec.Image.Tag },
+                { Constants.ManagedByLabel, Constants.ManagedBy }
+            };
 
             var tasks = new List<Task>()
             {
@@ -131,8 +135,6 @@ namespace QdrantOperator
                     body:               pvc,
                     name:               volumeName,
                     namespaceParameter: resource.Namespace());
-
-
             }
         }
         public async Task UpsertStatefulsetAsync(V1QdrantCluster resource)
@@ -161,6 +163,10 @@ namespace QdrantOperator
                 statefulSet.Metadata.SetLabels(labels);
                 statefulSet.AddOwnerReference(resource.MakeOwnerReference());
             }
+
+            var runAsUser  = resource.Spec.SecurityContext?.RunAsUser ?? Constants.RunAsUser;
+            var runAsGroup = resource.Spec.SecurityContext?.RunAsGroup ?? Constants.RunAsGroup;
+            var fsGroup    = resource.Spec.PodSecurityContext?.FsGroup ?? Constants.FsGroup;
 
             var spec = new V1StatefulSetSpec()
             {
@@ -213,7 +219,7 @@ namespace QdrantOperator
                                 {
                                     "chown",
                                     "-R",
-                                    "1000:3000",
+                                    $"{runAsUser}:{fsGroup}",
                                     "/qdrant/storage"
                                 },
                                 Resources    = new V1ResourceRequirements() { },
@@ -227,7 +233,7 @@ namespace QdrantOperator
                                 },
                                 TerminationMessagePath   = "/dev/termination-log",
                                 TerminationMessagePolicy = "File",
-                                ImagePullPolicy          = "IfNotPresent",
+                                ImagePullPolicy          = resource.Spec.Image.PullPolicy,
                             }
                         },
                         Containers = new List<V1Container>()
@@ -274,7 +280,7 @@ namespace QdrantOperator
                                         Value = "/qdrant/init/.qdrant-initialized",
                                     }
                                 },
-                                Resources = new V1ResourceRequirements(){},
+                                Resources = resource.Spec.Resources,
                                 VolumeMounts = new List<V1VolumeMount>()
                                 {
                                     new V1VolumeMount()
@@ -321,14 +327,15 @@ namespace QdrantOperator
                                 },
                                 TerminationMessagePath   = "/dev/termination-log",
                                 TerminationMessagePolicy = "File",
-                                ImagePullPolicy          = "IfNotPresent",
-                                SecurityContext          = new V1SecurityContext()
+                                ImagePullPolicy          = resource.Spec.Image.PullPolicy,
+                                SecurityContext          = resource.Spec.SecurityContext ??
+                                new V1SecurityContext()
                                 {
-                                    Privileged             = false,
-                                    RunAsUser              = 1000,
-                                    RunAsGroup             = 2000,
-                                    RunAsNonRoot           = true,
-                                    ReadOnlyRootFilesystem = true,
+                                    Privileged               = false,
+                                    RunAsUser                = runAsUser,
+                                    RunAsGroup               = runAsGroup,
+                                    RunAsNonRoot             = true,
+                                    ReadOnlyRootFilesystem   = true,
                                     AllowPrivilegeEscalation = false,
                                 }
                             }
@@ -339,9 +346,10 @@ namespace QdrantOperator
                         DnsPolicy                     = "ClusterFirst",
                         ServiceAccountName            = resource.GetFullName(),
                         ServiceAccount                = resource.GetFullName(),
-                        SecurityContext               = new V1PodSecurityContext()
+                        SecurityContext               = resource.Spec.PodSecurityContext ??
+                        new V1PodSecurityContext()
                         {
-                            FsGroup             = 3000,
+                            FsGroup             = fsGroup,
                             FsGroupChangePolicy = "Always"
                         },
                         SchedulerName = "default-scheduler"
@@ -378,8 +386,42 @@ namespace QdrantOperator
                 }
             };
 
+            if (resource.Spec.AntiAffinity == true)
+            {
+                spec.Template.Spec.Affinity = new V1Affinity()
+                {
+                    PodAntiAffinity = new V1PodAntiAffinity()
+                    {
+                        RequiredDuringSchedulingIgnoredDuringExecution =
+                        [
+                            new V1PodAffinityTerm()
+                            {
+                                LabelSelector = new V1LabelSelector(){
+                                    MatchExpressions =
+                                    [
+                                        new V1LabelSelectorRequirement()
+                                        {
+                                            Key              = Labels.App,
+                                            OperatorProperty = "In",
+                                            Values           =
+                                            [
+                                                resource.GetFullName()
+                                            ]
+                                        }
+                                    ]
+                                },
+                                TopologyKey = Labels.KubernetesHostname
+                            }
+                        ]
+                    }
+                };
+            }
+
+            spec.Template.EnsureMetadata();
             spec.Selector.MatchLabels.AddRange(labels);
+            spec.Template.Metadata.SetAnnotations(resource.Spec.PodAnnotations);
             spec.Template.Metadata.SetLabels(labels);
+            spec.Template.Metadata.SetLabels(resource.Spec.PodLabels);
             spec.VolumeClaimTemplates.First().Metadata.SetLabels(labels);
 
             if (exists)
@@ -611,6 +653,26 @@ service:
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
 
+            var metadata = typeof(V1ServiceMonitor).GetKubernetesTypeMetadata();
+            var review   = new V1SelfSubjectAccessReview().Initialize();
+
+            review.Spec = new V1SelfSubjectAccessReviewSpec();
+            review.Spec.ResourceAttributes = new V1ResourceAttributes()
+            {
+                Group             = metadata.Group,
+                Version           = metadata.ApiVersion,
+                Resource          = metadata.PluralName,
+                Verb              = "list, get, create, update",
+                NamespaceProperty = resource.Namespace()
+            };
+
+            review = await k8s.AuthorizationV1.CreateSelfSubjectAccessReviewAsync(review);
+
+            if (review.Status.Allowed != true)
+            {
+                logger?.LogErrorEx(() => $"Not authorized. Qdrant-operator needs [create, get, list, update] permissions for {metadata.ApiVersion}/{metadata.PluralName}");
+            }
+
             var serviceMonitorList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1ServiceMonitor>(
                 namespaceParameter: resource.Namespace(),
                 fieldSelector:      $"metadata.name={resource.GetFullName()}");
@@ -663,6 +725,26 @@ service:
             await SyncContext.Clear;
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            var metadata = typeof(V1GrafanaDashboard).GetKubernetesTypeMetadata();
+            var review   = new V1SelfSubjectAccessReview().Initialize();
+
+            review.Spec = new V1SelfSubjectAccessReviewSpec();
+            review.Spec.ResourceAttributes = new V1ResourceAttributes()
+            {
+                Group = metadata.Group,
+                Version = metadata.ApiVersion,
+                Resource = metadata.PluralName,
+                Verb = "create,get,list,update",
+                NamespaceProperty = resource.Namespace()
+            };
+
+            review = await k8s.AuthorizationV1.CreateSelfSubjectAccessReviewAsync(review);
+
+            if (review.Status.Allowed != true)
+            {
+                logger?.LogErrorEx(() => $"Not authorized. Qdrant-operator needs [create, get, list, update] permissions for {metadata.ApiVersion}/{metadata.PluralName}");
+            }
 
             var grafanaDashboardList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1GrafanaDashboard>(
                 namespaceParameter: resource.Namespace(),

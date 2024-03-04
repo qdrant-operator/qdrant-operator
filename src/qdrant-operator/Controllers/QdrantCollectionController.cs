@@ -53,6 +53,8 @@ namespace QdrantOperator
 
         private async Task<QdrantClient> CreateQdrantClientAsync(V1QdrantCollection resource, V1QdrantCluster cluster)
         {
+            await SyncContext.Clear;
+
             var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
             var clusterPort = 6334;
 
