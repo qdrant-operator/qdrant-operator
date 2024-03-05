@@ -55,6 +55,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.qdrant-operator", "tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{C8447156-01E6-461F-AF35-26B23D8ECA44}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{B4EDAE8A-1DCD-48C3-AAF8-BDFC38E67E44}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{EDD6841F-91D5-49C8-98A5-6BF00DDD22FD}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\main.yml = .github\workflows\main.yml
+		.github\workflows\publish.yml = .github\workflows\publish.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +87,8 @@ Global
 		{7982FB86-8069-4424-8D4C-4749F50C72C3} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
 		{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1} = {5BE76551-3FE4-4F58-A38B-4F09BBEA14D1}
 		{430A5504-A608-4A88-9988-310278D7EA90} = {C8447156-01E6-461F-AF35-26B23D8ECA44}
+		{B4EDAE8A-1DCD-48C3-AAF8-BDFC38E67E44} = {0681D4FC-EBC2-4E19-8659-83DF7BEE2110}
+		{EDD6841F-91D5-49C8-98A5-6BF00DDD22FD} = {B4EDAE8A-1DCD-48C3-AAF8-BDFC38E67E44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B832640-D437-4400-A2A3-BFF907D5DF38}
