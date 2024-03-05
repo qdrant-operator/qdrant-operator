@@ -115,7 +115,7 @@ namespace QdrantOperator
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }
 
-            resource = await k8s.CustomObjects.ReadNamespacedCustomObjectAsync<V1QdrantCollection>(resource.Name(), resource.Namespace());
+            resource = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1QdrantCollection>(resource.Name(), resource.Namespace());
 
             resource.Status = new V1QdrantCollection.V1QdrantCollectionStatus()
             {

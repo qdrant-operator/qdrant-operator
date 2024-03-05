@@ -13,7 +13,7 @@
 		<PackageReference Include="FluentAssertions" Version="6.12.0" />
 		<PackageReference Include="KubernetesClient" Version="12.0.16" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
-		<PackageReference Include="Neon.Operator.Xunit" Version="1.0.4-pre.1">
+		<PackageReference Include="Neon.Operator.Xunit" Version="1.0.4-pre.2">
 			<ExcludeAssets>analyzers</ExcludeAssets>
 		</PackageReference>
 		<PackageReference Include="Qdrant.Client" Version="1.7.0" />

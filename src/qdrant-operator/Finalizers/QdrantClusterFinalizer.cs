@@ -239,21 +239,11 @@ namespace QdrantOperator
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
 
-            bool serviceExists = false;
-            try
-            {
-                await k8s.CustomObjects.ReadNamespacedCustomObjectAsync<V1ServiceMonitor>(
+            var service = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1ServiceMonitor>(
                     name:               resource.GetFullName(),
                     namespaceParameter: resource.Namespace());
 
-                serviceExists = true;
-            }
-            catch (Exception)
-            {
-                // doesn't exist
-            }
-
-            if (serviceExists)
+            if (service != null)
             {
                 await k8s.CustomObjects.DeleteNamespacedCustomObjectAsync<V1ServiceMonitor>(
                     name:               resource.GetFullName(),

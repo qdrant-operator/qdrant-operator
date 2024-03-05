@@ -1,3 +1,5 @@
+using System.Security.Policy;
+
 using Neon.Operator.Attributes;
 using Neon.Operator.OperatorLifecycleManager;
 
@@ -52,6 +54,9 @@ using QdrantOperator;
     Tag = Constants.Version)]
 [assembly: Repository(
     Repository = "https://github.com/qdrant-operator/qdrant-operator")]
+[assembly: Link(
+    Name = "GitHub",
+    Url = "https://github.com/qdrant-operator/qdrant-operator")]
 [assembly: InstallMode(
     Type = InstallModeType.OwnNamespace
     | InstallModeType.SingleNamespace
