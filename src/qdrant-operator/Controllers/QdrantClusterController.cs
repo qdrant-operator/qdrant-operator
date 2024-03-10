@@ -653,7 +653,6 @@ service:
         }
 
 
-
         internal async Task ConfigureSecretsAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -662,8 +661,12 @@ service:
 
             if (resource.Spec.ApiKey.Enabled == false && resource.Spec.ReadApiKey.Enabled == false)
             {
+                logger?.LogInformationEx(() => "ApiKeys not enabled.");
+
                 return;
             }
+
+            logger?.LogInformationEx(() => "Reconciling secrets.");
 
             if (resource.Spec.ApiKey.Enabled)
             {
@@ -675,8 +678,12 @@ service:
                 {
                     secret = await k8s.CoreV1.ReadNamespacedSecretAsync(name: secretName, namespaceParameter: resource.Namespace());
 
+                    logger?.LogInformationEx(() => "ApiKey secret exists, checking keys.");
+
                     if (!secret.Data.TryGetValue(secretKey, out _))
                     {
+                        logger?.LogInformationEx(() => $"ApiKey secret does not contain key {secretKey}, creating secret.");
+
                         secret.Data = secret.Data ?? new Dictionary<string, byte[]>();
                         secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ApiKey.KeyLength)));
 
@@ -685,6 +692,8 @@ service:
                 }
                 catch (Exception e) when (e is HttpOperationException)
                 {
+                    logger?.LogInformationEx(() => "ApiKey secret does not exist, creating.");
+
                     if (((HttpOperationException)e).Response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         secret = new V1Secret().Initialize();
@@ -711,8 +720,12 @@ service:
                 {
                     secret = await k8s.CoreV1.ReadNamespacedSecretAsync(name: secretName, namespaceParameter: resource.Namespace());
 
+                    logger?.LogInformationEx(() => "ReadApiKey secret exists, checking keys.");
+
                     if (!secret.Data.TryGetValue(secretKey, out _))
                     {
+                        logger?.LogInformationEx(() => $"ReadApiKey secret does not contain key {secretKey}, creating secret.");
+
                         secret.Data = secret.Data ?? new Dictionary<string, byte[]>();
                         secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ReadApiKey.KeyLength)));
 
@@ -721,6 +734,8 @@ service:
                 }
                 catch (Exception e) when (e is HttpOperationException)
                 {
+                    logger?.LogInformationEx(() => "ReadApiKey secret does not exist, creating.");
+
                     if (((HttpOperationException)e).Response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         secret = new V1Secret().Initialize();
