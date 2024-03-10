@@ -9,6 +9,7 @@ rules:
   - configmaps
   - persistentvolumeclaims
   - persistentvolumeclaims/status
+  - secrets
   - serviceaccounts
   - services
   verbs:
