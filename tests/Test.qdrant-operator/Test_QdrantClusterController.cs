@@ -28,6 +28,7 @@ namespace Test_QdrantOperator
             fixture.Operator.AddController<QdrantClusterController>();
             fixture.Operator.AddFinalizer<QdrantClusterFinalizer>();
             fixture.RegisterType<V1ConfigMap>();
+            fixture.RegisterType<V1Secret>();
             fixture.RegisterType<V1Service>();
             fixture.RegisterType<V1PersistentVolumeClaim>();
             fixture.RegisterType<V1ServiceAccount>();
@@ -87,6 +88,145 @@ namespace Test_QdrantOperator
 
             serviceAccount.Should().HaveCount(1);
             serviceAccount.First().Metadata.Name.Should().Be(qdrantCluster.GetFullName());
+        }
+
+        [Fact]
+        public async Task TestCreatesSecrets()
+        {
+            fixture.ClearResources();
+
+            var controller = fixture.Operator.GetController<QdrantClusterController>();
+
+            var qdrantCluster = new V1QdrantCluster()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "test",
+                    NamespaceProperty = "test",
+                },
+                Spec = new V1QdrantCluster.V1QdrantClusterSpec()
+                {
+                    Image = new ImageSpec()
+                    {
+                        PullPolicy = "Always",
+                        Repository = "test/image",
+                        Tag = "not-latest"
+                    },
+                    Persistence = new PersistenceSpec()
+                    {
+                        Size = "9999Gi",
+                        StorageClassName = "test-storage-class"
+                    },
+                    ApiKey = new ApiKeyOptions()
+                    {
+                        Enabled = true
+                    },
+                    ReadApiKey = new ApiKeyOptions()
+                    {
+                        Enabled = true
+                    }
+                }
+            };
+            await controller.ReconcileInternalAsync(qdrantCluster);
+
+            // verify result
+            var statefulsets   = fixture.GetResources<V1StatefulSet>();
+            var secrets        = fixture.GetResources<V1Secret>();
+
+            statefulsets.Should().HaveCount(1);
+            statefulsets.First().Metadata.Name.Should().Be(qdrantCluster.GetFullName());
+
+            var env = statefulsets.First().Spec.Template.Spec.Containers.First().Env.Where(e => e.Name == Constants.ApiKeyEnvName).FirstOrDefault();
+            env.ValueFrom.SecretKeyRef.Should().NotBeNull();
+            env.ValueFrom.SecretKeyRef.Name.Should().Be(qdrantCluster.GetFullName());
+            env.ValueFrom.SecretKeyRef.Key.Should().Be(Constants.ApiKeySecretKey);
+
+            env = statefulsets.First().Spec.Template.Spec.Containers.First().Env.Where(e => e.Name == Constants.ReadApiKeyEnvName).FirstOrDefault();
+            env.ValueFrom.SecretKeyRef.Should().NotBeNull();
+            env.ValueFrom.SecretKeyRef.Name.Should().Be(qdrantCluster.GetFullName());
+            env.ValueFrom.SecretKeyRef.Key.Should().Be(Constants.ReadApiKeySecretKey);
+
+            secrets.Should().HaveCount(1);
+
+            secrets.FirstOrDefault().Data.Keys.Should().HaveCount(2);
+            secrets.FirstOrDefault().Data.Keys.Should().Contain(Constants.ApiKeySecretKey);
+            secrets.FirstOrDefault().Data.Keys.Should().Contain(Constants.ReadApiKeySecretKey);
+        }
+
+        [Fact]
+        public async Task TestCreatesCustomSecrets()
+        {
+            fixture.ClearResources();
+
+            var controller = fixture.Operator.GetController<QdrantClusterController>();
+
+            var qdrantCluster = new V1QdrantCluster()
+            {
+                Metadata = new V1ObjectMeta()
+                {
+                    Name = "test",
+                    NamespaceProperty = "test",
+                },
+                Spec = new V1QdrantCluster.V1QdrantClusterSpec()
+                {
+                    Image = new ImageSpec()
+                    {
+                        PullPolicy = "Always",
+                        Repository = "test/image",
+                        Tag = "not-latest"
+                    },
+                    Persistence = new PersistenceSpec()
+                    {
+                        Size = "9999Gi",
+                        StorageClassName = "test-storage-class"
+                    },
+                    ApiKey = new ApiKeyOptions()
+                    {
+                        Enabled = true,
+                        Secret = new V1SecretKeySelector()
+                        {
+                            Name = "foo",
+                            Key = "bar"
+                        }
+                    },
+                    ReadApiKey = new ApiKeyOptions()
+                    {
+                        Enabled = true,
+                        Secret = new V1SecretKeySelector()
+                        {
+                            Name = "bar",
+                            Key = "baz",
+                        },
+                        KeyLength = 5
+                    }
+                }
+            };
+            await controller.ReconcileInternalAsync(qdrantCluster);
+
+            // verify result
+            var statefulsets   = fixture.GetResources<V1StatefulSet>();
+            var secrets        = fixture.GetResources<V1Secret>();
+
+            statefulsets.Should().HaveCount(1);
+            statefulsets.First().Metadata.Name.Should().Be(qdrantCluster.GetFullName());
+
+            var env = statefulsets.First().Spec.Template.Spec.Containers.First().Env.Where(e => e.Name == Constants.ApiKeyEnvName).FirstOrDefault();
+            env.ValueFrom.SecretKeyRef.Should().NotBeNull();
+            env.ValueFrom.SecretKeyRef.Name.Should().Be("foo");
+            env.ValueFrom.SecretKeyRef.Key.Should().Be("bar");
+
+            env = statefulsets.First().Spec.Template.Spec.Containers.First().Env.Where(e => e.Name == Constants.ReadApiKeyEnvName).FirstOrDefault();
+            env.ValueFrom.SecretKeyRef.Should().NotBeNull();
+            env.ValueFrom.SecretKeyRef.Name.Should().Be("bar");
+            env.ValueFrom.SecretKeyRef.Key.Should().Be("baz");
+
+            secrets.Should().HaveCount(2);
+
+            var fooSecret = secrets.Where(s => s.Name() == "foo").FirstOrDefault();
+            fooSecret.Data.Keys.Should().HaveCount(1);
+            var barSecret = secrets.Where(s => s.Name() == "bar").FirstOrDefault();
+            barSecret.Data.Keys.Should().HaveCount(1);
+            barSecret.Data.Values.FirstOrDefault().Length.Should().Be(5);
         }
 
         [Fact]

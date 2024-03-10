@@ -13,15 +13,29 @@ using Prometheus;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// The Startup class.
+    /// </summary>
     public class OperatorStartup
     {
+        /// <summary>
+        /// The Configuration.
+        /// </summary>
         public IConfiguration Configuration { get; }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="configuration"></param>
         public OperatorStartup(IConfiguration configuration)
         {
             this.Configuration = configuration;
         }
 
+        /// <summary>
+        /// Service configuration.
+        /// </summary>
+        /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
             var loggerFactory = LoggerFactory.Create(options =>
@@ -59,6 +73,10 @@ namespace QdrantOperator
             }
         }
 
+        /// <summary>
+        /// App configuration.
+        /// </summary>
+        /// <param name="app"></param>
         public void Configure(IApplicationBuilder app)
         {
             app.UseKubernetesOperator();

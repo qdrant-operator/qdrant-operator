@@ -24,6 +24,9 @@ using QdrantOperator.Extensions;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Reconciles <see cref="V1QdrantCollectionFieldIndex"/> resources.
+    /// </summary>
     [RbacRule<V1QdrantCollectionFieldIndex>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     public class QdrantCollectionFieldIndexController : ResourceControllerBase<V1QdrantCollectionFieldIndex>
     {
@@ -32,6 +35,13 @@ namespace QdrantOperator
         private readonly ILogger<QdrantCollectionFieldIndexController>   logger;
         private readonly ILoggerFactory                                  loggerFactory;
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="finalizerManager"></param>
+        /// <param name="logger"></param>
+        /// <param name="loggerFactory"></param>
         public QdrantCollectionFieldIndexController(
             IKubernetes                                     k8s,
             IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager,
@@ -63,6 +73,11 @@ namespace QdrantOperator
             return qdrantClient;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCollectionFieldIndex resource)
         {
             await SyncContext.Clear;
@@ -96,7 +111,8 @@ namespace QdrantOperator
 
             return ResourceControllerResult.Ok();
         }
-        public async Task UpsertCollectionFieldIndexAsync(QdrantClient qdrantClient, V1QdrantCollectionFieldIndex resource)
+
+        internal async Task UpsertCollectionFieldIndexAsync(QdrantClient qdrantClient, V1QdrantCollectionFieldIndex resource)
         {
            var info = await qdrantClient.GetCollectionInfoAsync(resource.Spec.Collection);
 
@@ -132,6 +148,12 @@ namespace QdrantOperator
 
             }
         }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
         public override Task DeletedAsync(V1QdrantCollectionFieldIndex entity)
         {
             return base.DeletedAsync(entity);

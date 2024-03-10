@@ -15,6 +15,11 @@ namespace QdrantOperator
         public const string OwnershipInitContainerName = "ensure-storage-dir-ownership";
         public const string Maturity                   = "beta";
         public const string DefaultChannel             = "beta";
+        public const string ApiKeyEnvName              = "QDRANT__SERVICE__API_KEY";
+        public const string ReadApiKeyEnvName          = "QDRANT__SERVICE__READ_ONLY_API_KEY";
+        public const string ApiKeySecretKey            = "apiKey";
+        public const string ReadApiKeySecretKey        = "readApiKey";
+
 
         public const string HttpPortName               = "http";
         public const string GrpcPortName               = "grpc";

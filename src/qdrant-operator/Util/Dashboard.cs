@@ -1,9 +1,16 @@
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Grafana dashboard.
+    /// </summary>
     public static class Dashboard
     {
         // "interval": "{0}"
         // "uid": "${{DS_PROMETHEUS}}"
+
+        /// <summary>
+        /// The dashboard JSON.
+        /// </summary>
         public static string DashboardJson =
 """
 {{

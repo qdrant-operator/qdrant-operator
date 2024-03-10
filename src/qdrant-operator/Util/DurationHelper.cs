@@ -6,8 +6,17 @@ using Microsoft.VisualBasic;
 
 namespace QdrantOperator.Util
 {
+    /// <summary>
+    /// Duration helper methods.
+    /// </summary>
     public static class DurationHelper
     {
+        /// <summary>
+        /// Parse a string duration.
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public static TimeSpan ParseDuration(string duration)
         {
             var matches = Regex.Matches(duration, @"([0-9]*)((?:ms|s|m|h|d|w|y))");
@@ -75,6 +84,11 @@ namespace QdrantOperator.Util
             return result;
         }
 
+        /// <summary>
+        /// Convert a timespan to duration string.
+        /// </summary>
+        /// <param name="duration"></param>
+        /// <returns></returns>
         public static string ToDurationString(TimeSpan duration)
         {
             var result = new StringBuilder();

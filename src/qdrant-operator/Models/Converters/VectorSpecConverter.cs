@@ -7,8 +7,19 @@ using Neon.Common;
 
 namespace QdrantOperator.Models.Converters
 {
+    /// <summary>
+    /// A json convertor for <see cref="VectorSpec"/>.
+    /// </summary>
     public class VectorSpecConverter : JsonConverter<VectorSpec>
     {
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <param name="typeToConvert"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        /// <exception cref="JsonException"></exception>
         public override VectorSpec Read(
             ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -82,6 +93,13 @@ namespace QdrantOperator.Models.Converters
 
             return result;
         }
+
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="vectorSpec"></param>
+        /// <param name="options"></param>
         public override void Write(
             Utf8JsonWriter writer, VectorSpec vectorSpec, JsonSerializerOptions options)
         {

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using k8s;
+using k8s.Autorest;
 using k8s.Models;
 
 using Microsoft.Extensions.Logging;
@@ -26,8 +27,12 @@ using QdrantOperator.Util;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// Reconciles <see cref="V1QdrantCluster"/> resources.
+    /// </summary>
     [RbacRule<V1StatefulSet>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ConfigMap>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
+    [RbacRule<V1Secret>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1QdrantCluster>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All, SubResources = "status")]
     [RbacRule<V1Service>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<V1ServiceAccount>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
@@ -36,6 +41,7 @@ namespace QdrantOperator
     [RbacRule<V1GrafanaDashboard>(Scope = EntityScope.Cluster, Verbs = RbacVerb.Get | RbacVerb.List | RbacVerb.Create | RbacVerb.Update)]
     [DependentResource<V1StatefulSet>]
     [DependentResource<V1ConfigMap>]
+    [DependentResource<V1Secret>]
     [DependentResource<V1Service>]
     [DependentResource<V1ServiceAccount>]
     [ResourceController(AutoRegisterFinalizers = true)]
@@ -45,6 +51,13 @@ namespace QdrantOperator
         private readonly IFinalizerManager<V1QdrantCluster> finalizerManager;
         private readonly ILogger<QdrantClusterController>   logger;
         private Dictionary<string, string>                  labels;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="finalizerManager"></param>
+        /// <param name="logger"></param>
         public QdrantClusterController(
             IKubernetes                        k8s,
             IFinalizerManager<V1QdrantCluster> finalizerManager,
@@ -55,6 +68,11 @@ namespace QdrantOperator
             this.logger           = logger;
         }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
         public override async Task<ResourceControllerResult> ReconcileAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
@@ -89,6 +107,8 @@ namespace QdrantOperator
                 { Constants.ManagedByLabel, Constants.ManagedBy }
             };
 
+            await ConfigureSecretsAsync(resource);
+
             var tasks = new List<Task>()
             {
                 UpsertStatefulsetAsync(resource),
@@ -111,7 +131,7 @@ namespace QdrantOperator
             await NeonHelper.WaitAllAsync(tasks);
         }
 
-        public async Task CheckVolumesAsync(V1QdrantCluster resource)
+        internal async Task CheckVolumesAsync(V1QdrantCluster resource)
         {
             for (int i = 0; i < resource.Spec.Replicas; i++)
             {
@@ -137,7 +157,7 @@ namespace QdrantOperator
                     namespaceParameter: resource.Namespace());
             }
         }
-        public async Task UpsertStatefulsetAsync(V1QdrantCluster resource)
+        internal async Task UpsertStatefulsetAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -167,6 +187,37 @@ namespace QdrantOperator
             var runAsUser  = resource.Spec.SecurityContext?.RunAsUser ?? Constants.RunAsUser;
             var runAsGroup = resource.Spec.SecurityContext?.RunAsGroup ?? Constants.RunAsGroup;
             var fsGroup    = resource.Spec.PodSecurityContext?.FsGroup ?? Constants.FsGroup;
+
+            var env = new List<V1EnvVar>()
+            {
+                new V1EnvVar()
+                {
+                    Name  = "QDRANT_INIT_FILE_PATH",
+                    Value = "/qdrant/init/.qdrant-initialized",
+                }
+            };
+
+            if (resource.Spec.ApiKey.Enabled)
+            {
+                var secretRef = resource.Spec.ApiKey.Secret ?? new V1SecretKeySelector()
+                {
+                    Name = resource.Spec.ApiKey.Secret?.Name ?? resource.GetFullName(),
+                    Key  = resource.Spec.ApiKey.Secret?.Key ?? Constants.ApiKeySecretKey,
+                };
+
+                env.Add(new V1EnvVar(name: Constants.ApiKeyEnvName, valueFrom: new V1EnvVarSource(secretKeyRef: secretRef)));
+            }
+
+            if (resource.Spec.ReadApiKey.Enabled)
+            {
+                var secretRef = resource.Spec.ReadApiKey.Secret ?? new V1SecretKeySelector()
+                {
+                    Name = resource.Spec.ReadApiKey.Secret?.Name ?? resource.GetFullName(),
+                    Key  = resource.Spec.ReadApiKey.Secret?.Key ?? Constants.ReadApiKeySecretKey,
+                };
+
+                env.Add(new V1EnvVar(name: Constants.ReadApiKeyEnvName, valueFrom: new V1EnvVarSource(secretKeyRef: secretRef)));
+            }
 
             var spec = new V1StatefulSetSpec()
             {
@@ -272,14 +323,7 @@ namespace QdrantOperator
                                         Protocol      = "TCP"
                                     },
                                 },
-                                Env = new List<V1EnvVar>()
-                                {
-                                    new V1EnvVar()
-                                    {
-                                        Name  = "QDRANT_INIT_FILE_PATH",
-                                        Value = "/qdrant/init/.qdrant-initialized",
-                                    }
-                                },
+                                Env = env,
                                 Resources = resource.Spec.Resources,
                                 VolumeMounts = new List<V1VolumeMount>()
                                 {
@@ -352,7 +396,9 @@ namespace QdrantOperator
                             FsGroup             = fsGroup,
                             FsGroupChangePolicy = "Always"
                         },
-                        SchedulerName = "default-scheduler"
+                        SchedulerName             = "default-scheduler",
+                        Tolerations               = resource.Spec.Tolerations,
+                        TopologySpreadConstraints = resource.Spec.TopologySpreadConstraints
                     }
                 },
                 ServiceName          = Constants.HeadlessServiceName(resource.GetFullName()),
@@ -426,11 +472,13 @@ namespace QdrantOperator
 
             if (exists)
             {
-                statefulSet.Spec.Replicas                             = spec.Replicas;
-                statefulSet.Spec.Template                             = spec.Template;
-                statefulSet.Spec.UpdateStrategy                       = spec.UpdateStrategy;
-                statefulSet.Spec.PersistentVolumeClaimRetentionPolicy = spec.PersistentVolumeClaimRetentionPolicy;
-                statefulSet.Spec.MinReadySeconds                      = spec.MinReadySeconds;
+                statefulSet.Spec.Replicas                                = spec.Replicas;
+                statefulSet.Spec.Template                                = spec.Template;
+                statefulSet.Spec.UpdateStrategy                          = spec.UpdateStrategy;
+                statefulSet.Spec.PersistentVolumeClaimRetentionPolicy    = spec.PersistentVolumeClaimRetentionPolicy;
+                statefulSet.Spec.MinReadySeconds                         = spec.MinReadySeconds;
+                statefulSet.Spec.Template.Spec.Tolerations               = spec.Template.Spec.Tolerations;
+                statefulSet.Spec.Template.Spec.TopologySpreadConstraints = spec.Template.Spec.TopologySpreadConstraints;
 
                 await k8s.AppsV1.ReplaceNamespacedStatefulSetAsync(
                     body:               statefulSet,
@@ -447,7 +495,7 @@ namespace QdrantOperator
             }
         }
 
-        public async Task UpsertServiceAsync(V1QdrantCluster resource)
+        internal async Task UpsertServiceAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -494,7 +542,7 @@ namespace QdrantOperator
 
         }
 
-        public async Task UpsertHeadlessServiceAsync(V1QdrantCluster resource)
+        internal async Task UpsertHeadlessServiceAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -539,7 +587,7 @@ namespace QdrantOperator
             }
         }
 
-        public async Task UpsertConfigMapAsync(V1QdrantCluster resource)
+        internal async Task UpsertConfigMapAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -604,7 +652,93 @@ service:
 
         }
 
-        public async Task UpsertServiceAccountAsync(V1QdrantCluster resource)
+
+
+        internal async Task ConfigureSecretsAsync(V1QdrantCluster resource)
+        {
+            await SyncContext.Clear;
+
+            using var activity = TraceContext.ActivitySource?.StartActivity();
+
+            if (resource.Spec.ApiKey.Enabled == false && resource.Spec.ReadApiKey.Enabled == false)
+            {
+                return;
+            }
+
+            if (resource.Spec.ApiKey.Enabled)
+            {
+                var secretName = resource.Spec.ApiKey.Secret?.Name ?? resource.GetFullName();
+                var secretKey  = resource.Spec.ApiKey.Secret?.Key ?? Constants.ApiKeySecretKey;
+
+                V1Secret secret = null;
+                try
+                {
+                    secret = await k8s.CoreV1.ReadNamespacedSecretAsync(name: secretName, namespaceParameter: resource.Namespace());
+
+                    if (!secret.Data.TryGetValue(secretKey, out _))
+                    {
+                        secret.Data = secret.Data ?? new Dictionary<string, byte[]>();
+                        secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ApiKey.KeyLength)));
+
+                        await k8s.CoreV1.UpsertSecretAsync(secret, namespaceParameter: secret.Namespace());
+                    }
+                }
+                catch (Exception e) when (e is HttpOperationException)
+                {
+                    if (((HttpOperationException)e).Response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        secret = new V1Secret().Initialize();
+                        secret.Metadata.Name = secretName;
+                        secret.Metadata.NamespaceProperty = resource.Namespace();
+                        secret.Metadata.SetLabels(labels);
+                        secret.AddOwnerReference(resource.MakeOwnerReference());
+
+                        secret.Data = new Dictionary<string, byte[]>();
+                        secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ApiKey.KeyLength)));
+
+                        await k8s.CoreV1.UpsertSecretAsync(secret, namespaceParameter: secret.Namespace());
+                    }
+                }
+            }
+
+            if (resource.Spec.ReadApiKey.Enabled)
+            {
+                var secretName = resource.Spec.ReadApiKey.Secret?.Name ?? resource.GetFullName();
+                var secretKey  = resource.Spec.ReadApiKey.Secret?.Key ?? Constants.ReadApiKeySecretKey;
+
+                V1Secret secret = null;
+                try
+                {
+                    secret = await k8s.CoreV1.ReadNamespacedSecretAsync(name: secretName, namespaceParameter: resource.Namespace());
+
+                    if (!secret.Data.TryGetValue(secretKey, out _))
+                    {
+                        secret.Data = secret.Data ?? new Dictionary<string, byte[]>();
+                        secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ReadApiKey.KeyLength)));
+
+                        await k8s.CoreV1.UpsertSecretAsync(secret, namespaceParameter: secret.Namespace());
+                    }
+                }
+                catch (Exception e) when (e is HttpOperationException)
+                {
+                    if (((HttpOperationException)e).Response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        secret = new V1Secret().Initialize();
+                        secret.Metadata.Name = secretName;
+                        secret.Metadata.NamespaceProperty = resource.Namespace();
+                        secret.Metadata.SetLabels(labels);
+                        secret.AddOwnerReference(resource.MakeOwnerReference());
+
+                        secret.Data = new Dictionary<string, byte[]>();
+                        secret.Data.Add(secretKey, System.Text.Encoding.UTF8.GetBytes(NeonHelper.GetCryptoRandomPassword(resource.Spec.ReadApiKey.KeyLength)));
+
+                        await k8s.CoreV1.UpsertSecretAsync(secret, namespaceParameter: secret.Namespace());
+                    }
+                }
+            }
+        }
+
+        internal async Task UpsertServiceAccountAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -647,7 +781,7 @@ service:
             }
         }
 
-        public async Task UpsertServiceMonitorAsync(V1QdrantCluster resource)
+        internal async Task UpsertServiceMonitorAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -720,7 +854,7 @@ service:
                    namespaceParameter: resource.Namespace());
         }
 
-        public async Task UpsertGrafanaDashboardAsync(V1QdrantCluster resource)
+        internal async Task UpsertGrafanaDashboardAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
@@ -746,19 +880,13 @@ service:
                 logger?.LogErrorEx(() => $"Not authorized. Qdrant-operator needs [create, get, list, update] permissions for {metadata.ApiVersion}/{metadata.PluralName}");
             }
 
-            var grafanaDashboardList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1GrafanaDashboard>(
+            var grafanaDashboard = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1GrafanaDashboard>(
                 namespaceParameter: resource.Namespace(),
-                fieldSelector:      $"metadata.name={resource.GetFullName()}");
+                name: resource.GetFullName(),
+                throwIfNotFound: false);
 
-            V1GrafanaDashboard grafanaDashboard;
-
-            if (grafanaDashboardList.Items.Count > 0)
-            {
-                logger.LogInformationEx(() => $"GrafanaDashboard for {resource.GetFullName()}/Qdrant exists, updating existing GrafanaDashboard.");
-                grafanaDashboard = grafanaDashboardList.Items[0];
-            }
-            else
-            {
+            if (grafanaDashboard == null)
+            {     
                 grafanaDashboard = new V1GrafanaDashboard().Initialize();
                 grafanaDashboard.Metadata.Name = resource.GetFullName();
                 grafanaDashboard.Metadata.SetNamespace(resource.Namespace());
@@ -793,7 +921,7 @@ service:
                    namespaceParameter: resource.Namespace());
         }
 
-        public V1ServiceSpec CreateServiceSpec(string selectorName, bool headless = false)
+        internal V1ServiceSpec CreateServiceSpec(string selectorName, bool headless = false)
         {
             var spec = new V1ServiceSpec()
             {

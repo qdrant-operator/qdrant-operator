@@ -241,7 +241,8 @@ namespace QdrantOperator
 
             var service = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1ServiceMonitor>(
                     name:               resource.GetFullName(),
-                    namespaceParameter: resource.Namespace());
+                    namespaceParameter: resource.Namespace(),
+                    throwIfNotFound:    false);
 
             if (service != null)
             {

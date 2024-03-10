@@ -12,9 +12,21 @@ using OpenTelemetry.Trace;
 
 namespace QdrantOperator
 {
+    /// <summary>
+    /// The Program.
+    /// </summary>
     public static partial class Program
     {
+        /// <summary>
+        /// The service name.
+        /// </summary>
         public const string ServiceName = "qdrant-operator";
+
+        /// <summary>
+        /// The program entry point.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <returns></returns>
         public static async Task Main(string[] args)
         {
             var listenPort = 5000;
