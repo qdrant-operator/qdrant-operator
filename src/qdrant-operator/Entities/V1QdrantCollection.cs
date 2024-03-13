@@ -106,6 +106,7 @@ namespace QdrantOperator
             /// points are distributed across shards according to shard key
             /// </summary>
             [DefaultValue(null)]
+            [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
             public ShardingMethod? ShardingMethod { get; set; } = null;
 
             /// <summary>

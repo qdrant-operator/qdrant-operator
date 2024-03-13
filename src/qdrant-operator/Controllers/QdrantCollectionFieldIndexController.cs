@@ -6,11 +6,8 @@ using k8s;
 
 using Microsoft.Extensions.Logging;
 
-using Neon.Common;
 using Neon.Diagnostics;
 using Neon.K8s;
-using Neon.Net;
-using Neon.K8s.PortForward;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Finalizers;
@@ -19,8 +16,8 @@ using Neon.Tasks;
 
 using Qdrant.Client;
 
-using QdrantOperator.Entities;
 using QdrantOperator.Extensions;
+using QdrantOperator.Util;
 
 namespace QdrantOperator
 {
@@ -34,6 +31,7 @@ namespace QdrantOperator
         private readonly IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager;
         private readonly ILogger<QdrantCollectionFieldIndexController>   logger;
         private readonly ILoggerFactory                                  loggerFactory;
+        private readonly ClusterHelper                                   clusterHelper;
 
         /// <summary>
         /// Constructor.
@@ -46,31 +44,14 @@ namespace QdrantOperator
             IKubernetes                                     k8s,
             IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager,
             ILogger<QdrantCollectionFieldIndexController>   logger,
-            ILoggerFactory                                  loggerFactory)
+            ILoggerFactory                                  loggerFactory,
+            ClusterHelper clusterHelper)
         {
             this.k8s                = k8s;
             this.finalizerManager   = finalizerManager;
             this.logger             = logger;
             this.loggerFactory      = loggerFactory;
-        }
-
-        private async Task<QdrantClient> CreateQdrantClientAsync(V1QdrantCollectionFieldIndex resource, V1QdrantCluster cluster)
-        {
-            await SyncContext.Clear;
-
-            var clusterHost = $"{cluster.GetFullName()}.{resource.Metadata.NamespaceProperty}";
-            var clusterPort = 6334;
-
-            logger?.LogInformationEx(() => $"Connecting to cluster: {resource.Spec.Cluster} at: [{clusterHost}:{clusterPort}]");
-
-            var qdrantClient = new QdrantClient(
-                host:          clusterHost,
-                port:          clusterPort,
-                https:         false,
-                grpcTimeout:   TimeSpan.FromSeconds(60),
-                loggerFactory: this.loggerFactory);
-
-            return qdrantClient;
+            this.clusterHelper      = clusterHelper;
         }
 
         /// <summary>
@@ -92,7 +73,7 @@ namespace QdrantOperator
 
             var cluster = clusters.First();
 
-            var qdrantClient = await CreateQdrantClientAsync(resource, cluster);
+            var qdrantClient = await clusterHelper.CreateQdrantClientAsync(cluster, resource.Metadata.NamespaceProperty);
 
             if (!(await qdrantClient.CollectionExistsAsync(resource.Spec.Collection)))
             {

@@ -5,6 +5,7 @@ namespace QdrantOperator.Models
     /// <summary>
     /// Enumerates tokenizer types.
     /// </summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
     public enum TokenizerType
     {
         /// <summary>

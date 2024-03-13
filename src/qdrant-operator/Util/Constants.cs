@@ -2,7 +2,7 @@ namespace QdrantOperator
 {
     internal class Constants
     {
-        public const string Version                    = "0.0.1";
+        public const string Version                    = "0.0.4";
         public const string MinKubeVersion             = "1.24.0";
         public const string ManagedByLabel             = "app.kubernetes.io/managed-by";
         public const string ManagedBy                  = "qdrant-operator";
@@ -51,7 +51,7 @@ spec:
   image:
     repository: qdrant/qdrant
     pullPolicy: Always
-    tag: v1.6.1
+    tag: v1.8.1
   persistence:
     size: 1Gi
     storageClassName: default

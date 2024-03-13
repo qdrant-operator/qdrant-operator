@@ -18,6 +18,7 @@
 
     <ItemGroup>
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
+        <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
         <PackageReference Include="Neon.Common" Version="4.0.4" />
         <PackageReference Include="Neon.Operator" Version="1.0.4" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />

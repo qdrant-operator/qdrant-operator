@@ -19,6 +19,7 @@ namespace QdrantOperator.Models
         /// Type of internal tags, build from payload Distance function types used to compare vectors
         /// </summary>
         [DefaultValue(DistanceFunction.Cosine)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
         public DistanceFunction Distance { get; set; } = DistanceFunction.Cosine;
 
         /// <summary>

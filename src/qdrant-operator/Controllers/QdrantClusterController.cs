@@ -103,7 +103,6 @@ namespace QdrantOperator
                 { Labels.App,               resource.GetFullName() },
                 { Labels.Instance,          resource.Metadata.Name },
                 { Labels.Name,              resource.Metadata.Name },
-                { Labels.Version,           resource.Spec.Image.Tag },
                 { Constants.ManagedByLabel, Constants.ManagedBy }
             };
 
@@ -359,7 +358,35 @@ namespace QdrantOperator
                                 {
                                     HttpGet = new V1HTTPGetAction()
                                     {
-                                        Path   = "/readyz",
+                                        Path   = "/",
+                                        Port   = Constants.HttpPort,
+                                        Scheme = "HTTP"
+                                    },
+                                    InitialDelaySeconds = 5,
+                                    TimeoutSeconds      = 1,
+                                    PeriodSeconds       = 5,
+                                    SuccessThreshold    = 1,
+                                    FailureThreshold    = 6,
+                                },
+                                StartupProbe = new V1Probe()
+                                {
+                                    HttpGet = new V1HTTPGetAction()
+                                    {
+                                        Path   = "/",
+                                        Port   = Constants.HttpPort,
+                                        Scheme = "HTTP"
+                                    },
+                                    InitialDelaySeconds = 10,
+                                    TimeoutSeconds      = 1,
+                                    PeriodSeconds       = 5,
+                                    SuccessThreshold    = 1,
+                                    FailureThreshold    = 30,
+                                },
+                                LivenessProbe = new V1Probe()
+                                {
+                                    HttpGet = new V1HTTPGetAction()
+                                    {
+                                        Path   = "/",
                                         Port   = Constants.HttpPort,
                                         Scheme = "HTTP"
                                     },
@@ -465,13 +492,23 @@ namespace QdrantOperator
 
             spec.Template.EnsureMetadata();
             spec.Selector.MatchLabels.AddRange(labels);
-            spec.Template.Metadata.SetAnnotations(resource.Spec.PodAnnotations);
             spec.Template.Metadata.SetLabels(labels);
-            spec.Template.Metadata.SetLabels(resource.Spec.PodLabels);
             spec.VolumeClaimTemplates.First().Metadata.SetLabels(labels);
+
+            if (resource.Spec.PodAnnotations != null)
+            {
+                spec.Template.Metadata.SetAnnotations(resource.Spec.PodAnnotations);
+            }
+
+            if (resource.Spec.PodLabels != null)
+            {
+                spec.Template.Metadata.SetLabels(resource.Spec.PodLabels);
+            }
 
             if (exists)
             {
+                spec.Template.Metadata.Labels = statefulSet.Spec.Selector.MatchLabels;
+
                 statefulSet.Spec.Replicas                                = spec.Replicas;
                 statefulSet.Spec.Template                                = spec.Template;
                 statefulSet.Spec.UpdateStrategy                          = spec.UpdateStrategy;
@@ -820,6 +857,8 @@ service:
             if (review.Status.Allowed != true)
             {
                 logger?.LogErrorEx(() => $"Not authorized. Qdrant-operator needs [create, get, list, update] permissions for {metadata.ApiVersion}/{metadata.PluralName}");
+
+                return;
             }
 
             var serviceMonitorList = await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1ServiceMonitor>(
@@ -893,6 +932,8 @@ service:
             if (review.Status.Allowed != true)
             {
                 logger?.LogErrorEx(() => $"Not authorized. Qdrant-operator needs [create, get, list, update] permissions for {metadata.ApiVersion}/{metadata.PluralName}");
+
+                return;
             }
 
             var grafanaDashboard = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1GrafanaDashboard>(

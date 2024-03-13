@@ -5,6 +5,7 @@ namespace QdrantOperator.Models
     /// <summary>
     /// Enumerates payload schema types.
     /// </summary>
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
     public enum PayloadSchemaType
     {
         /// <summary>

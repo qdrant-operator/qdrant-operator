@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using Neon.Common;
 using Neon.Operator;
 
 using OpenTelemetry.Resources;
@@ -43,6 +44,11 @@ namespace QdrantOperator
                    settings.AssemblyScanningEnabled = false;
                    settings.Name                    = ServiceName;
                    settings.Port                    = listenPort;
+
+                   if (NeonHelper.IsDevWorkstation)
+                   {
+                       settings.PodNamespace = "qdrant";
+                   }
                })
                .UseStartup<OperatorStartup>();
 

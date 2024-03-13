@@ -13,6 +13,7 @@ namespace QdrantOperator.Models
         /// The compression ratio.
         /// </summary>
         [Required]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
         public CompressionRatio CompressionRatio { get; set; }
 
         /// <summary>

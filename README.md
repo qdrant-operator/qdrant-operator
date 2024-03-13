@@ -30,7 +30,7 @@ spec:
   image:
     repository: qdrant/qdrant
     pullPolicy: Always
-    tag: v1.6.1
+    tag: v1.8.1
   persistence:
     size: 1Gi
     storageClassName: default

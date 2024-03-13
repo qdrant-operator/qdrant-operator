@@ -97,7 +97,8 @@ namespace QdrantOperator
             /// <summary>
             /// Where to put the servers.
             /// </summary>
-            public Dictionary<string, string> NodeSelector { get; set; } = new Dictionary<string, string>();
+            [DefaultValue(null)]
+            public Dictionary<string, string> NodeSelector { get; set; }
 
             /// <summary>
             /// Whether to add an antiAffinity rule to the statefulset. Enabling this will ensure
@@ -109,7 +110,8 @@ namespace QdrantOperator
             /// <summary>
             /// The resource requirements for each qdrant server.
             /// </summary>
-            public V1ResourceRequirements Resources { get; set; } = new V1ResourceRequirements();
+            [DefaultValue(null)]
+            public V1ResourceRequirements Resources { get; set; }
 
             /// <summary>
             /// The pod security context options.
@@ -124,22 +126,26 @@ namespace QdrantOperator
             /// <summary>
             /// Optionally set some extra pod annotations.
             /// </summary>
-            public Dictionary<string, string> PodAnnotations { get; set; } = new Dictionary<string, string>();
+            [DefaultValue(null)]
+            public Dictionary<string, string> PodAnnotations { get; set; }
 
             /// <summary>
             /// Optionally set some extra pod labels.
             /// </summary>
-            public Dictionary<string, string> PodLabels { get; set; } = new Dictionary<string, string>();
+            [DefaultValue(null)]
+            public Dictionary<string, string> PodLabels { get; set; }
 
             /// <summary>
             /// Optionally add pod tolerations.
             /// </summary>
-            public List<V1Toleration> Tolerations { get; set; } = new List<V1Toleration>();
+            [DefaultValue(null)]
+            public List<V1Toleration> Tolerations { get; set; }
 
             /// <summary>
             /// Optionally add topology spread constraints.
             /// </summary>
-            public List<V1TopologySpreadConstraint> TopologySpreadConstraints { get; set; } = new List<V1TopologySpreadConstraint>();
+            [DefaultValue(null)]
+            public List<V1TopologySpreadConstraint> TopologySpreadConstraints { get; set; }
 
             /// <summary>
             /// Optionally set an API Key. If the secret specified does not exist, it will be created.

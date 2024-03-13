@@ -18,6 +18,7 @@ namespace QdrantOperator.Models
         /// Tokenization is the process of splitting a string into tokens, which are then indexed in the inverted index.
         /// </summary>
         [DefaultValue(TokenizerType.Word)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
         public TokenizerType Tokenizer { get; set; } = TokenizerType.Word;
 
         /// <summary>

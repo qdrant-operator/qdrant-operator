@@ -92,6 +92,7 @@ namespace QdrantOperator
             /// The payload schema type.
             /// </summary>
             [Required]
+            [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
             public PayloadSchemaType Type { get; set; }
 
             /// <summary>

@@ -7,10 +7,13 @@ using Grpc.Core;
 
 using k8s;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Neon.Operator.Xunit;
 
 using QdrantOperator;
 using QdrantOperator.Models;
+using QdrantOperator.Util;
 using QdrantOperator.Xunit;
 
 namespace Test_QdrantOperator
@@ -30,6 +33,7 @@ namespace Test_QdrantOperator
             this.operatorFixture = operatorFixture;
             this.operatorFixture.Operator.AddController<QdrantCollectionController>();
             this.operatorFixture.Operator.AddFinalizer<QdrantCollectionFinalizer>();
+            this.operatorFixture.Services.AddSingleton<ClusterHelper>();
             this.operatorFixture.Start();
 
             this.qdrantFixture = qdrantFixture;

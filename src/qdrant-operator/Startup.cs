@@ -7,9 +7,13 @@ using Microsoft.Extensions.Logging;
 
 using Neon.Common;
 using Neon.Diagnostics;
+using Neon.K8s;
+using Neon.K8s.PortForward;
 using Neon.Operator;
 
 using Prometheus;
+
+using QdrantOperator.Util;
 
 namespace QdrantOperator
 {
@@ -52,8 +56,19 @@ namespace QdrantOperator
             var logger = loggerFactory.CreateLogger<OperatorStartup>();
 
             services.AddSingleton<ILoggerFactory>(loggerFactory);
+            services.AddSingleton<ClusterHelper>();
             services.AddLogging();
             services.AddKubernetesOperator();
+
+            if (NeonHelper.IsDevWorkstation)
+            {
+                services.AddSingleton<PortForwardManager>((ctx) =>
+                {
+                    var loggerFactory = ctx.GetService<ILoggerFactory>();
+                    var k8s = KubeHelper.GetKubernetesClient();
+                    return new PortForwardManager(k8s, loggerFactory);
+                });
+            }
 
             var metricsPort = 9762;
 
