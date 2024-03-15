@@ -1,0 +1,26 @@
+---
+sidebar_position: 1
+title: Helm
+hide_title: false
+hide_table_of_contents: false
+description: How to install the Qdrant Operator using Helm.
+keywords:
+  - installation
+  - Helm
+last_update:
+  author: Marcus Bowyer
+---
+
+# Helm
+
+First, fork the Qdrant Operator repo from
+[GitHub](https://github.com/qdrant-operator/qdrant-operator).
+
+The included helm chart contains the necessary permissions and configuration to
+run the operator in a Kubernetes cluster.
+
+To install the operator, run the following command:
+
+```bash
+helm install qdrant-operator ./charts/qdrant-operator
+```
