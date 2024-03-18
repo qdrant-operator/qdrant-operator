@@ -31,7 +31,7 @@ namespace QdrantOperator
         /// <summary>
         /// The Group this Kubernetes type belongs to.
         /// </summary>
-        public const string KubeGroup = "qdrant.io";
+        public const string KubeGroup = Constants.KubernetesGroup;
 
         /// <summary>
         /// The plural name of the entity.

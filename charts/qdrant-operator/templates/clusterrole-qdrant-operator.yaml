@@ -39,7 +39,7 @@ rules:
   - list
   - update
 - apiGroups:
-  - qdrant.io
+  - qdrantoperator.io
   resources:
   - qdrantclusters
   - qdrantclusters/status
