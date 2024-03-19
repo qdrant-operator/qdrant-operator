@@ -19,12 +19,23 @@ using QdrantOperator.Entities;
 
 namespace QdrantOperator.Util
 {
+    /// <summary>
+    /// Qdrant cluster helper.
+    /// </summary>
     public class ClusterHelper
     {
         private readonly IKubernetes            k8s;
         private readonly ILogger<ClusterHelper> logger;
         private readonly ILoggerFactory         loggerFactory;
         private readonly IServiceProvider       services;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="logger"></param>
+        /// <param name="loggerFactory"></param>
+        /// <param name="services"></param>
         public ClusterHelper(
             IKubernetes            k8s,
             ILogger<ClusterHelper> logger,

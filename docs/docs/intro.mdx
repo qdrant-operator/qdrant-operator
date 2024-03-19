@@ -13,6 +13,9 @@ Resource Definitions (CRDs) to extend the Kubernetes API for Qdrant clusters.
 - **Automated deployment**: The Operator automates the deployment of Qdrant
   clusters on Kubernetes.
 - **Configuration management**: The Operator manages the configuration of Qdrant
-  clusters.
+  clusters. Supported Custom Resources include `QdrantCluster`,
+  `QdrantCollection`, `QdrantCollectionFieldIndex` to manage Qdrant resources.
 - **Scaling**: The Operator can scale Qdrant clusters up or down.
-- **Security**: The Operator manages the security of Qdrant clusters.
+- **Security**: API key support using either user-provided keys or
+  auto-generated keys.
+- **Monitoring**: Configure Prometheus and Grafana to monitor Qdrant clusters.

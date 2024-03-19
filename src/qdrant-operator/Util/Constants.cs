@@ -2,7 +2,7 @@ namespace QdrantOperator
 {
     internal class Constants
     {
-        public const string Version                    = "0.0.4";
+        public const string Version                    = "1.0.0";
         public const string MinKubeVersion             = "1.24.0";
         public const string ManagedByLabel             = "app.kubernetes.io/managed-by";
         public const string ManagedBy                  = "qdrant-operator";
@@ -19,7 +19,7 @@ namespace QdrantOperator
         public const string ReadApiKeyEnvName          = "QDRANT__SERVICE__READ_ONLY_API_KEY";
         public const string ApiKeySecretKey            = "apiKey";
         public const string ReadApiKeySecretKey        = "readApiKey";
-
+        public const string KubernetesGroup            = "qdrantoperator.io";
 
         public const string HttpPortName               = "http";
         public const string GrpcPortName               = "grpc";
@@ -43,7 +43,7 @@ namespace QdrantOperator
         public const string QdrantCollectionFieldIndexDescription = $"A QdrantFieldIndex describes a field index for a collection. " +
             $"Each collection can have many field indexes.";
 
-        public const string QdrantClusterExample = $@"apiVersion: qdrant.io/v1alpha1
+        public const string QdrantClusterExample = $@"apiVersion: {Constants.KubernetesGroup}/v1alpha1
 kind: QdrantCluster
 metadata:
   name: my-cluster
@@ -57,7 +57,7 @@ spec:
     storageClassName: default
   replicas: 1";
 
-        public const string QdrantCollectionExample = $@"apiVersion: qdrant.io/v1alpha1
+        public const string QdrantCollectionExample = $@"apiVersion: {Constants.KubernetesGroup}/v1alpha1
 kind: QdrantCollection
 metadata:
   name: my-collection
@@ -68,7 +68,7 @@ spec:
     size: 5
     onDisk: true";
 
-        public const string QdrantFieldIndexExample = $@"apiVersion: qdrant.io/v1alpha1
+        public const string QdrantFieldIndexExample = $@"apiVersion: {Constants.KubernetesGroup}/v1alpha1
 kind: QdrantCollectionFieldIndex
 metadata:
   name: my-collection-field-index

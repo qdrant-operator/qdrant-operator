@@ -15,6 +15,8 @@ using Prometheus;
 
 using QdrantOperator.Util;
 
+using Quartz;
+
 namespace QdrantOperator
 {
     /// <summary>
@@ -59,6 +61,16 @@ namespace QdrantOperator
             services.AddSingleton<ClusterHelper>();
             services.AddLogging();
             services.AddKubernetesOperator();
+            services.AddQuartz(q =>
+            {
+                q.SchedulerId = "qdrant-operator";
+                q.UseSimpleTypeLoader();
+                q.UseInMemoryStore();
+                q.UseDefaultThreadPool(tp =>
+                {
+                    tp.MaxConcurrency = 10;
+                });
+            });
 
             if (NeonHelper.IsDevWorkstation)
             {

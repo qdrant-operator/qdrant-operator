@@ -22,7 +22,7 @@ $> helm install qdrant-operator ./charts/qdrant-operator
 
 Then deploy a QdrantCluster resource:
 ```yaml
-apiVersion: qdrant.io/v1alpha1
+apiVersion: qdrantoperator.io/v1alpha1
 kind: QdrantCluster
 metadata:
   name: my-cluster
@@ -39,7 +39,7 @@ spec:
 
 You can also add Collections to the Cluster by adding a QdrantCollection resource:
 ```yaml
-apiVersion: qdrant.io/v1alpha1
+apiVersion: qdrantoperator.io/v1alpha1
 kind: QdrantCollection
 metadata:
   name: my-collection
@@ -53,7 +53,7 @@ spec:
 
 You can also add Field Index to a colection by adding a QdrantCollectionFieldIndex resource:
 ```yaml
-apiVersion: qdrant.io/v1alpha1
+apiVersion: qdrantoperator.io/v1alpha1
 kind: QdrantCollectionFieldIndex
 metadata:
   name: my-collection-field-index

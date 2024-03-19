@@ -13,14 +13,13 @@
         <NeonOperatorCrdOutputDir>$(SolutionDir)\charts\qdrant-operator\crds</NeonOperatorCrdOutputDir>
         <NeonOperatorRbacOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorRbacOutputDir>
         <NeonOperatorWebhookOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorWebhookOutputDir>
-        <NeonOperatorAnalyzerLoggingEnabled>true</NeonOperatorAnalyzerLoggingEnabled>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
         <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
-        <PackageReference Include="Neon.Common" Version="4.0.4" />
-        <PackageReference Include="Neon.Operator" Version="1.0.4" />
+        <PackageReference Include="Neon.Common" Version="4.0.6" />
+        <PackageReference Include="Neon.Operator" Version="1.0.6" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
@@ -28,6 +27,8 @@
         <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.7.0" />
         <PackageReference Include="prometheus-net" Version="8.2.1" />
-        <PackageReference Include="Qdrant.Client" Version="1.7.0" />
+        <PackageReference Include="Qdrant.Client" Version="1.8.0" />
+        <PackageReference Include="Quartz" Version="3.8.1" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.8.1" />
     </ItemGroup>
 </Project>
