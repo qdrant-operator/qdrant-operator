@@ -13,6 +13,9 @@ using Neon.K8s;
 
 namespace QdrantOperator.Jobs
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CreateSnapshotJob : IJob
     {
         public async Task Execute(IJobExecutionContext context)
@@ -21,12 +24,12 @@ namespace QdrantOperator.Jobs
 
             var k8s = (IKubernetes)dataMap["Kubernetes"];
 
-            var resource = (QdrantSnapshotSchedule)dataMap["Snapshot"];
+            var resource = (QdrantSnapshotSchedule)dataMap[nameof(QdrantSnapshotSchedule)];
 
             var snapshot = new QdrantSnapshot().Initialize();
 
-            
-            snapshot.Metadata.Name = $"{resource.Metadata.Name}-{NeonHelper.CreateBase36Uuid()}";
+            var snapshotName = $"{resource.Metadata.Name}-{NeonHelper.CreateBase36Uuid()}";
+            snapshot.Metadata.Name = snapshotName;
             snapshot.Metadata.NamespaceProperty = resource.Metadata.NamespaceProperty;
 
             snapshot.Spec = resource.Spec.Snapshot;
@@ -36,8 +39,7 @@ namespace QdrantOperator.Jobs
                 name: snapshot.Metadata.Name,
                 namespaceParameter: snapshot.Metadata.NamespaceProperty);
 
+            context.Result = snapshotName;
         }
-
-       
     }
 }

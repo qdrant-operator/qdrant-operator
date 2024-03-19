@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using k8s;
 using k8s.Models;
@@ -167,6 +168,19 @@ namespace QdrantOperator
             /// The status message.
             /// </summary>
             public string Message { get; set; }
+            /// <summary>
+            /// Conditions of status
+            /// </summary>
+            public List<V1Condition> Conditions { get; set; }
+
+            /// <summary>
+            /// snapshot creation status
+            /// </summary>
+            /// <returns></returns>
+            public bool IsCreatingSnapshot()
+            {
+                return Conditions.Any(c => c.Type == $"{Constants.KubernetesGroup}/CreatingSnapshot" && c.Status == "True");
+            }
             
         }
     }

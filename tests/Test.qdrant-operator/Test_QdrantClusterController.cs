@@ -13,6 +13,8 @@ using QdrantOperator;
 using QdrantOperator.Entities;
 using QdrantOperator.Models;
 
+using Quartz;
+
 namespace Test_QdrantOperator
 {
     [Collection("Test_QdrantClusterController")]

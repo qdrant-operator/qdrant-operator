@@ -17,6 +17,8 @@ using QdrantOperator.Util;
 
 using Quartz;
 
+using AsyncKeyedLock;
+
 namespace QdrantOperator
 {
     /// <summary>
@@ -71,6 +73,14 @@ namespace QdrantOperator
                     tp.MaxConcurrency = 10;
                 });
             });
+
+            var locker = new AsyncKeyedLocker(o =>
+            {
+                o.PoolSize = 20;
+                o.PoolInitialFill = 1;
+            });
+
+            services.AddSingleton(locker);
 
             if (NeonHelper.IsDevWorkstation)
             {

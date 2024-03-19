@@ -31,30 +31,29 @@ using Quartz;
 
 namespace QdrantOperator.Controllers
 {
+    /// <summary>
+    /// QdrantSnapshotSchedule Controller
+    /// </summary>
     [RbacRule<QdrantSnapshot>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     [RbacRule<QdrantSnapshotSchedule>(Scope = EntityScope.Cluster, Verbs = RbacVerb.All)]
     public class QdrantSnapshotScheduleController : ResourceControllerBase<QdrantSnapshotSchedule>
     {
         private readonly IKubernetes                        k8s;
-        private readonly IFinalizerManager<QdrantSnapshotSchedule> finalizerManager;
         private readonly ILogger<QdrantSnapshotScheduleController>   logger;
-        private Dictionary<string, string>                  labels;
         private ISchedulerFactory schedulerFactory;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="k8s"></param>
-        /// <param name="finalizerManager"></param>
         /// <param name="logger"></param>
+        /// <param name="schedulerFactory"></param>
         public QdrantSnapshotScheduleController(
             IKubernetes k8s,
-            IFinalizerManager<QdrantSnapshotSchedule> finalizerManager,
             ILogger<QdrantSnapshotScheduleController> logger,
             ISchedulerFactory schedulerFactory)
         {
             this.k8s = k8s;
-            this.finalizerManager = finalizerManager;
             this.logger = logger;
             this.schedulerFactory = schedulerFactory;
         }
@@ -68,6 +67,11 @@ namespace QdrantOperator.Controllers
         {
             var scheduler = await schedulerFactory.GetScheduler();
 
+            if (!scheduler.IsStarted)
+            {
+                await scheduler.Start();
+            }
+
             var jobKey = new JobKey(resource.Uid(), QdrantSnapshotSchedule.KubeKind);
 
             IJobDetail job = JobBuilder.Create<CreateSnapshotJob>()
@@ -75,7 +79,7 @@ namespace QdrantOperator.Controllers
                .Build();
 
             job.JobDataMap.Put("Kubernetes", k8s);
-            job.JobDataMap.Put("QdrantSnapshotSchedule", resource);
+            job.JobDataMap.Put(nameof(QdrantSnapshotSchedule), resource);
 
             ITrigger trigger = TriggerBuilder.Create()
                 .WithIdentity(resource.Uid(), QdrantSnapshotSchedule.KubeKind)

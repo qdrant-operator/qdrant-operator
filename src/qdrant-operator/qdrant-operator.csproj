@@ -16,6 +16,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
         <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
         <PackageReference Include="Neon.Common" Version="4.0.6" />

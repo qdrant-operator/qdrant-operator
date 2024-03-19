@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AsyncKeyedLock;
+
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -24,6 +26,7 @@ using Neon.Tasks;
 
 using QdrantOperator.Entities;
 using QdrantOperator.Util;
+using AsyncKeyedLock;
 
 namespace QdrantOperator
 {
@@ -50,6 +53,7 @@ namespace QdrantOperator
         private readonly IKubernetes                        k8s;
         private readonly IFinalizerManager<V1QdrantCluster> finalizerManager;
         private readonly ILogger<QdrantClusterController>   logger;
+        private readonly AsyncKeyedLocker                   lockProvider;
         private Dictionary<string, string>                  labels;
 
         /// <summary>
@@ -61,11 +65,13 @@ namespace QdrantOperator
         public QdrantClusterController(
             IKubernetes                        k8s,
             IFinalizerManager<V1QdrantCluster> finalizerManager,
-            ILogger<QdrantClusterController>   logger)
+            ILogger<QdrantClusterController>   logger,
+            AsyncKeyedLocker                   lockProvider)
         {
             this.k8s              = k8s;
             this.finalizerManager = finalizerManager;
             this.logger           = logger;
+            this.lockProvider     = lockProvider;
         }
 
         /// <summary>
@@ -78,7 +84,9 @@ namespace QdrantOperator
             await SyncContext.Clear;
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
-            
+
+            using var _lock = await lockProvider.LockAsync($"{nameof(V1QdrantCluster)}/{resource.Metadata.Name}/{resource.Metadata.NamespaceProperty}");
+
             await ReconcileInternalAsync(resource);
 
             await WaitForReplicasAsync(resource);
@@ -90,12 +98,14 @@ namespace QdrantOperator
             return ResourceControllerResult.Ok();
         }
 
-        internal async Task ReconcileInternalAsync(V1QdrantCluster resource)
+        internal async Task<ResourceControllerResult> ReconcileInternalAsync(V1QdrantCluster resource)
         {
             await SyncContext.Clear;
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
-            
+
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
             logger.LogInformation($"RECONCILING: {resource.Name()}");
 
             labels = new Dictionary<string, string>
@@ -105,6 +115,11 @@ namespace QdrantOperator
                 { Labels.Name,              resource.Metadata.Name },
                 { Constants.ManagedByLabel, Constants.ManagedBy }
             };
+
+            if (resource.Status.IsCreatingSnapshot())
+            {
+                return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
+            }
 
             await ConfigureSecretsAsync(resource);
 
@@ -128,6 +143,8 @@ namespace QdrantOperator
             }
 
             await NeonHelper.WaitAllAsync(tasks);
+            return ResourceControllerResult.Ok();
+
         }
 
         internal async Task CheckVolumesAsync(V1QdrantCluster resource)

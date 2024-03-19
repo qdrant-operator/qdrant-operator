@@ -40,6 +40,7 @@ namespace QdrantOperator
         /// <param name="finalizerManager"></param>
         /// <param name="logger"></param>
         /// <param name="loggerFactory"></param>
+        /// <param name="clusterHelper"></param>
         public QdrantCollectionFieldIndexController(
             IKubernetes                                     k8s,
             IFinalizerManager<V1QdrantCollectionFieldIndex> finalizerManager,
