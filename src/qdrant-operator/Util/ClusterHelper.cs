@@ -48,11 +48,16 @@ namespace QdrantOperator.Util
             this.services      = services;
         }
 
-        internal async Task<QdrantClient> CreateQdrantClientAsync(V1QdrantCluster cluster, string namespaceParameter)
+        internal async Task<QdrantClient> CreateQdrantClientAsync(
+            V1QdrantCluster cluster,
+            string namespaceParameter,
+            string nodeName = null)
         {
             await SyncContext.Clear;
 
-            var clusterHost = $"{cluster.GetFullName()}.{namespaceParameter}";
+            var serviceName = cluster.GetFullName();
+
+            var clusterHost = $"{serviceName}.{namespaceParameter}";
             var clusterPort = 6334;
 
             logger?.LogInformationEx(() => $"Connecting to cluster: {cluster.Metadata.Name} at: [{clusterHost}:{clusterPort}]");
@@ -62,7 +67,15 @@ namespace QdrantOperator.Util
                 var portManager = this.services.GetRequiredService<PortForwardManager>();
 
                 var port = NetHelper.GetUnusedTcpPort();
-                await portManager.StartServicePortForwardAsync(cluster.GetFullName(), namespaceParameter, port, clusterPort);
+
+                if (!nodeName.IsNullOrEmpty())
+                {
+                    portManager.StartPodPortForward(nodeName, namespaceParameter, port, clusterPort);
+                }
+                else
+                {
+                    await portManager.StartServicePortForwardAsync(cluster.GetFullName(), namespaceParameter, port, clusterPort);
+                }
 
                 clusterHost = "localhost";
                 clusterPort = port;

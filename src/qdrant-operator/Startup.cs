@@ -74,7 +74,7 @@ namespace QdrantOperator
                 });
             });
 
-            var locker = new AsyncKeyedLocker(o =>
+            var locker = new AsyncKeyedLocker<string>(o =>
             {
                 o.PoolSize = 20;
                 o.PoolInitialFill = 1;

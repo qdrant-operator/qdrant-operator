@@ -57,7 +57,7 @@ namespace Test.QdrantOperator
                 {
                     Pause = true,
                     Schedule = "0 0 0 ? * * 2099",
-                    Snapshot =new SnapshotSpec()
+                    Snapshot = new SnapshotSpec()
                     {
                         Cluster = "test",
                         Collection = "test-collection",
@@ -88,7 +88,7 @@ namespace Test.QdrantOperator
             var schedulerFactory = fixture.Services.Where(s => s.ServiceType == typeof(ISchedulerFactory)).FirstOrDefault();
             var scheduler = await ((ISchedulerFactory)schedulerFactory.ImplementationInstance).GetScheduler();
 
-            TestJobLIstener ourListener = new TestJobLIstener() ;
+            TestJobLIstener ourListener = new TestJobLIstener();
 
             scheduler.ListenerManager.AddJobListener(ourListener, GroupMatcher<JobKey>.GroupEquals(QdrantSnapshotSchedule.KubeKind));
 
@@ -106,7 +106,7 @@ namespace Test.QdrantOperator
 
                 if (!finished)
                 {
-                     await Task.Delay(100);
+                    await Task.Delay(100);
                 }
             }
 
@@ -114,6 +114,10 @@ namespace Test.QdrantOperator
         }
     }
 
+
+    /// <summary>
+    /// Test job listener class.
+    /// </summary>
     public class TestJobLIstener : IJobListener
     {
         public string Name => nameof(TestJobLIstener);
@@ -121,28 +125,38 @@ namespace Test.QdrantOperator
         private List<string> startedJobs = new List<string>();
         private List<string> finishedJobs = new List<string>();
 
+        /// <summary>
+        /// Method called when a job execution is vetoed.
+        /// </summary>
         public Task JobExecutionVetoed(IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Method called before a job is executed.
+        /// </summary>
         public Task JobToBeExecuted(IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
             startedJobs.Add(context.JobDetail.Key.Name);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Method called after a job has been executed.
+        /// </summary>
         public Task JobWasExecuted(IJobExecutionContext context, JobExecutionException jobException, CancellationToken cancellationToken = default)
         {
             finishedJobs.Add(context.JobDetail.Key.Name);
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Check if a job has finished execution.
+        /// </summary>
         public bool HasFinished(JobKey job)
         {
-
             return finishedJobs.Contains(job.Name);
-
         }
     }
 }

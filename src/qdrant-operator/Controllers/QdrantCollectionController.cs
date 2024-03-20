@@ -73,17 +73,22 @@ namespace QdrantOperator
 
             using var activity = TraceContext.ActivitySource?.StartActivity();
 
-            var clusters = (await k8s.CustomObjects.ListNamespacedCustomObjectAsync<V1QdrantCluster>(resource.Metadata.NamespaceProperty))
-                .Items.Where(c => c.Metadata.Name == resource.Spec.Cluster);
+            var cluster = await k8s.CustomObjects.GetNamespacedCustomObjectAsync<V1QdrantCluster>(
+                name: resource.Spec.Cluster,
+                namespaceParameter: resource.Namespace(),
+                throwIfNotFound: false);
 
-            if (clusters.Count() != 1)
+            if (cluster == null)
             {
                 logger?.LogErrorEx(() => $"Cluster: {resource.Spec.Cluster} not found, requeuing.");
 
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }
 
-            var cluster = clusters.First();
+            if (cluster.Status.IsCreatingSnapshot())
+            {
+                return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
+            }
 
             var qdrantClient = await clusterHelper.CreateQdrantClientAsync(cluster, resource.Metadata.NamespaceProperty);
 

@@ -2,8 +2,6 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Microsoft.VisualBasic;
-
 namespace QdrantOperator.Util
 {
     /// <summary>

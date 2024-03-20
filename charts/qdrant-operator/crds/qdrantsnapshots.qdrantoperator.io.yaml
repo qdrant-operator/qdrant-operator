@@ -73,7 +73,20 @@ spec:
                     type: string
                 type: object
             type: object
+          status:
+            properties:
+              nodes:
+                items:
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type: string
+                  type: object
+                type: array
+            type: object
         type: object
     served: true
     storage: true
-    subresources: {}
+    subresources:
+      status: {}

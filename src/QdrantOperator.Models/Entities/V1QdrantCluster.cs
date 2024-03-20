@@ -179,7 +179,8 @@ namespace QdrantOperator
             /// <returns></returns>
             public bool IsCreatingSnapshot()
             {
-                return Conditions.Any(c => c.Type == $"{Constants.KubernetesGroup}/CreatingSnapshot" && c.Status == "True");
+                return Conditions.Any(c => c.Type == QdrantOperator.Conditions.CreatingSnapshot
+                                            && c.Status == QdrantOperator.Conditions.TrueStatus);
             }
             
         }

@@ -511,10 +511,8 @@ spec:
                 items:
                   properties:
                     key:
-                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Gets the value in the key/value pair.
                       properties:
                         index:
                           description: The index parameters.
@@ -1033,10 +1031,8 @@ spec:
                     items:
                       properties:
                         key:
-                          description: Gets the key in the key/value pair.
                           type: string
                         value:
-                          description: Gets the value in the key/value pair.
                           properties:
                             index:
                               description: The index parameters.

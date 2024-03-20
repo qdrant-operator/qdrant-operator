@@ -117,10 +117,8 @@ spec:
                 items:
                   properties:
                     key:
-                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array
@@ -494,10 +492,8 @@ spec:
                 items:
                   properties:
                     key:
-                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array
@@ -506,10 +502,8 @@ spec:
                 items:
                   properties:
                     key:
-                      description: Gets the key in the key/value pair.
                       type: string
                     value:
-                      description: Gets the value in the key/value pair.
                       type: string
                   type: object
                 type: array

@@ -12,7 +12,7 @@ namespace QdrantOperator
     /// Represents a Qdrant Snapshot.
     /// </summary>
     [KubernetesEntity(Group = KubeGroup, Kind = KubeKind, ApiVersion = KubeApiVersion, PluralName = KubePlural)]
-    public class QdrantSnapshot : IKubernetesObject<V1ObjectMeta>, ISpec<SnapshotSpec>
+    public class QdrantSnapshot : IKubernetesObject<V1ObjectMeta>, ISpec<SnapshotSpec>, IStatus<SnapshotStatus>
     {
         /// <summary>
         /// The API version this Kubernetes type belongs to.
@@ -63,5 +63,9 @@ namespace QdrantOperator
         /// </summary>
         public SnapshotSpec Spec { get; set; }
 
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        public SnapshotStatus Status { get; set; }
     }
 }

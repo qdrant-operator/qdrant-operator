@@ -1,9 +1,19 @@
 using System;
 
+using Qdrant.Client;
+
 namespace QdrantOperator.Extensions
 {
-    internal static class ModelExtensions
+    /// <summary>
+    /// Model extensions.
+    /// </summary>
+    public static class ModelExtensions
     {
+        /// <summary>
+        /// Converts the <see cref="Models.ShardingMethod"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.ShardingMethod"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="Models.ShardingMethod"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.ShardingMethod"/> value.</returns>
         public static Qdrant.Client.Grpc.ShardingMethod ToGrpcShardingMethod(this Models.ShardingMethod value)
         {
             switch (value)
@@ -16,6 +26,11 @@ namespace QdrantOperator.Extensions
             }
         }
 
+        /// <summary>
+        /// Converts the nullable <see cref="Models.ShardingMethod"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.ShardingMethod"/> value.
+        /// </summary>
+        /// <param name="value">The nullable <see cref="Models.ShardingMethod"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.ShardingMethod"/> value.</returns>
         public static Qdrant.Client.Grpc.ShardingMethod ToGrpcShardingMethod(this Models.ShardingMethod? value)
         {
             if (value == null)
@@ -26,6 +41,11 @@ namespace QdrantOperator.Extensions
             return value.Value.ToGrpcShardingMethod();
         }
 
+        /// <summary>
+        /// Converts the <see cref="Models.CompressionRatio"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.CompressionRatio"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="Models.CompressionRatio"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.CompressionRatio"/> value.</returns>
         public static Qdrant.Client.Grpc.CompressionRatio ToGrpcCompressionRatio(this Models.CompressionRatio value)
         {
             switch (value)
@@ -45,6 +65,11 @@ namespace QdrantOperator.Extensions
             }
         }
 
+        /// <summary>
+        /// Converts the <see cref="Models.DistanceFunction"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.Distance"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="Models.DistanceFunction"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.Distance"/> value.</returns>
         public static Qdrant.Client.Grpc.Distance ToGrpcDistance(this Models.DistanceFunction value)
         {
             switch (value)
@@ -60,6 +85,11 @@ namespace QdrantOperator.Extensions
             }
         }
 
+        /// <summary>
+        /// Converts the <see cref="Models.TokenizerType"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.TokenizerType"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="Models.TokenizerType"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.TokenizerType"/> value.</returns>
         public static Qdrant.Client.Grpc.TokenizerType ToGrpcTokenizer(this Models.TokenizerType value)
         {
             switch (value)
@@ -76,6 +106,12 @@ namespace QdrantOperator.Extensions
                     throw new ArgumentException("Unknown value");
             }
         }
+
+        /// <summary>
+        /// Converts the <see cref="Models.PayloadSchemaType"/> enum value to the corresponding <see cref="Qdrant.Client.Grpc.PayloadSchemaType"/> value.
+        /// </summary>
+        /// <param name="value">The <see cref="Models.PayloadSchemaType"/> value to convert.</param>
+        /// <returns>The converted <see cref="Qdrant.Client.Grpc.PayloadSchemaType"/> value.</returns>
         public static Qdrant.Client.Grpc.PayloadSchemaType ToGrpcType(this Models.PayloadSchemaType value)
         {
             switch (value)

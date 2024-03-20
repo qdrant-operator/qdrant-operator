@@ -74,6 +74,11 @@ namespace QdrantOperator
 
             var cluster = clusters.First();
 
+            if (cluster.Status.IsCreatingSnapshot())
+            {
+                return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
+            }
+
             var qdrantClient = await clusterHelper.CreateQdrantClientAsync(cluster, resource.Metadata.NamespaceProperty);
 
             if (!(await qdrantClient.CollectionExistsAsync(resource.Spec.Collection)))

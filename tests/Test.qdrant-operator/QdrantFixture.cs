@@ -7,6 +7,9 @@ using Qdrant.Client.Grpc;
 
 namespace QdrantOperator.Xunit
 {
+    /// <summary>
+    /// Qdrant cluster fixture.
+    /// </summary>
     public sealed class QdrantFixture : ContainerFixture
     {
         /// <summary>
@@ -26,23 +29,13 @@ namespace QdrantOperator.Xunit
         /// </summary>
         public QdrantClient QdrantClient { get; private set; }
 
-
-        public TestFixtureStatus Start(
-            string image = null,
-            string name = "qdrant-test",
-            string[] args = null,
-            string hostInterface = null)
-        {
-            base.CheckDisposed();
-
-            return base.Start(
-                () =>
-                {
-                    StartAsComposed(image, name, args, hostInterface);
-                });
-        }
-
-
+        /// <summary>
+        /// Starts the Qdrant container as a composed service.
+        /// </summary>
+        /// <param name="image">The Docker image to use. If null, the latest version of the qdrant image will be used.</param>
+        /// <param name="name">The name of the container. Default is "qdrant-test".</param>
+        /// <param name="args">Additional arguments to pass to the Docker container.</param>
+        /// <param name="hostInterface">The host interface to bind the container ports to. If null, the default interface will be used.</param>
         public void StartAsComposed(
             string image = null,
             string name = "qdrant-test",
@@ -71,6 +64,10 @@ namespace QdrantOperator.Xunit
             QdrantClient = new QdrantClient(grpcClient);
         }
 
+        /// <summary>
+        /// Deletes all collections in the Qdrant server.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task ClearCollectionsAsync()
         {
             foreach (var collection in await QdrantClient.ListCollectionsAsync())
@@ -80,10 +77,9 @@ namespace QdrantOperator.Xunit
         }
 
         /// <summary>
-        /// Restarts the Qdrant container to clear any previous state and returns the 
-        /// new client connection.
+        /// Restarts the Qdrant container to clear any previous state and returns the new client connection.
         /// </summary>
-        /// <returns>The new connection.</returns>
+        /// <returns>The new Qdrant client connection.</returns>
         public new QdrantClient Restart()
         {
             base.Restart();
@@ -103,8 +99,7 @@ namespace QdrantOperator.Xunit
         }
 
         /// <summary>
-        /// This method completely resets the fixture by removing and recreating
-        /// the Qdrant container.
+        /// Resets the Qdrant fixture by removing and recreating the Qdrant container.
         /// </summary>
         public override void Reset()
         {

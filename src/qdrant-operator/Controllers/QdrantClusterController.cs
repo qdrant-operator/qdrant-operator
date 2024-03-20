@@ -26,7 +26,6 @@ using Neon.Tasks;
 
 using QdrantOperator.Entities;
 using QdrantOperator.Util;
-using AsyncKeyedLock;
 
 namespace QdrantOperator
 {
@@ -53,7 +52,7 @@ namespace QdrantOperator
         private readonly IKubernetes                        k8s;
         private readonly IFinalizerManager<V1QdrantCluster> finalizerManager;
         private readonly ILogger<QdrantClusterController>   logger;
-        private readonly AsyncKeyedLocker                   lockProvider;
+        private readonly AsyncKeyedLocker<string>           lockProvider;
         private Dictionary<string, string>                  labels;
 
         /// <summary>
@@ -62,11 +61,12 @@ namespace QdrantOperator
         /// <param name="k8s"></param>
         /// <param name="finalizerManager"></param>
         /// <param name="logger"></param>
+        /// <param name="lockProvider"></param>
         public QdrantClusterController(
             IKubernetes                        k8s,
             IFinalizerManager<V1QdrantCluster> finalizerManager,
             ILogger<QdrantClusterController>   logger,
-            AsyncKeyedLocker                   lockProvider)
+            AsyncKeyedLocker<string>           lockProvider)
         {
             this.k8s              = k8s;
             this.finalizerManager = finalizerManager;
@@ -116,7 +116,14 @@ namespace QdrantOperator
                 { Constants.ManagedByLabel, Constants.ManagedBy }
             };
 
-            if (resource.Status.IsCreatingSnapshot())
+            var status = await k8s.CustomObjects.GetNamespacedCustomObjectStatusAsync<V1QdrantCluster.V1QdrantClusterStatus>(
+                group: V1QdrantCluster.KubeGroup,
+                version: V1QdrantCluster.KubeApiVersion,
+                namespaceParameter: resource.Namespace(),
+                plural: V1QdrantCluster.KubePlural,
+                name: resource.Name());
+
+            if (status.IsCreatingSnapshot())
             {
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }

@@ -5,22 +5,22 @@
         <RootNamespace>QdrantOperator</RootNamespace>
         <ServerGarbageCollection>true</ServerGarbageCollection>
         <GarbageCollectionAdaptationMode>1</GarbageCollectionAdaptationMode>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <NoWarn>$(NoWarn);1701;1702;NETSDK1138;CS8892;ASP0014;IDE0063;IDE0090;IDE0017;IDE0079;IDE0066;NU1605;MSB3026;MSB3061;CS8981;TS2792;TS2688;TS1259;CA1416;JMA001;JMC001</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
-        <NeonOperatorCrdOutputDir>$(SolutionDir)\charts\qdrant-operator\crds</NeonOperatorCrdOutputDir>
         <NeonOperatorRbacOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorRbacOutputDir>
         <NeonOperatorWebhookOutputDir>$(SolutionDir)\charts\qdrant-operator\templates</NeonOperatorWebhookOutputDir>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="AsyncKeyedLock" Version="6.3.4" />
+        <PackageReference Include="AWSSDK.S3" Version="3.7.307" />
         <PackageReference Include="KubernetesClient" Version="12.0.16" />
         <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
         <PackageReference Include="Neon.Common" Version="4.0.6" />
-        <PackageReference Include="Neon.Operator" Version="1.0.6" />
+        <PackageReference Include="Neon.Kubernetes" Version="1.0.7" />
+        <PackageReference Include="Neon.Kubernetes.Core" Version="1.0.7" />
+        <PackageReference Include="Neon.Operator" Version="1.0.7" />
         <PackageReference Include="OpenTelemetry" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
         <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
@@ -31,5 +31,10 @@
         <PackageReference Include="Qdrant.Client" Version="1.8.0" />
         <PackageReference Include="Quartz" Version="3.8.1" />
         <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.8.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\QdrantOperator.Common\QdrantOperator.Common.csproj" />
+      <ProjectReference Include="..\QdrantOperator.Models\QdrantOperator.Models.csproj" />
     </ItemGroup>
 </Project>

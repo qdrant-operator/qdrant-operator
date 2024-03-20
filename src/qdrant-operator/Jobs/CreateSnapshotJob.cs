@@ -13,11 +13,17 @@ using Neon.K8s;
 
 namespace QdrantOperator.Jobs
 {
+
     /// <summary>
-    /// 
+    /// Represents a job that creates a snapshot.
     /// </summary>
     public class CreateSnapshotJob : IJob
     {
+        /// <summary>
+        /// Executes the job to create a snapshot.
+        /// </summary>
+        /// <param name="context">The job execution context.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task Execute(IJobExecutionContext context)
         {
             var dataMap = context.MergedJobDataMap;
