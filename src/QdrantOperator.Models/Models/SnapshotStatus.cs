@@ -2,10 +2,14 @@ using System.Collections.Generic;
 
 namespace QdrantOperator.Models
 {
+    /// <summary>
+    /// snapshot Status represents the node and the status response from the snapshot 
+    /// </summary>
     public class SnapshotStatus
     {
-        // unfortunately using the qdrant model here makes the generator barf, we'll have to
-        // create a model that represents the same data
-        public Dictionary<string, string> Nodes { get; set; }
+        /// <summary>
+        /// Nodes saves the status of the snapshot of each node.
+        /// </summary>
+        public Dictionary<string, SnapshotNodeStatus> Nodes { get; set; }
     }
 }

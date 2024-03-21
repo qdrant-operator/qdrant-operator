@@ -45,14 +45,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "crds", "crds", "{F6AA8DF1-AF47-4B55-9DDA-0C8D3F48A3E1}"
-	ProjectSection(SolutionItems) = preProject
-		charts\qdrant-operator\crds\qdrantclusters.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantclusters.qdrantoperator.io.yaml
-		charts\qdrant-operator\crds\qdrantcollectionfieldindexes.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantcollectionfieldindexes.qdrantoperator.io.yaml
-		charts\qdrant-operator\crds\qdrantcollections.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantcollections.qdrantoperator.io.yaml
-		charts\qdrant-operator\crds\qdrantsnapshotrestores.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantsnapshotrestores.qdrantoperator.io.yaml
-		charts\qdrant-operator\crds\qdrantsnapshots.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantsnapshots.qdrantoperator.io.yaml
-		charts\qdrant-operator\crds\qdrantsnapshotschedules.qdrantoperator.io.yaml = charts\qdrant-operator\crds\qdrantsnapshotschedules.qdrantoperator.io.yaml
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.qdrant-operator", "tests\Test.qdrant-operator\Test.qdrant-operator.csproj", "{430A5504-A608-4A88-9988-310278D7EA90}"
 EndProject
@@ -69,6 +61,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QdrantOperator.Models", "src\QdrantOperator.Models\QdrantOperator.Models.csproj", "{26179A39-61D4-4BDC-AF4B-DF87FBD0DADA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QdrantOperator.Common", "src\QdrantOperator.Common\QdrantOperator.Common.csproj", "{61130DB6-5865-4EF6-9DCF-0323C270EAF2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "snapshot-upload", "src\snapshot-upload\snapshot-upload.csproj", "{70F54049-F933-406E-9051-E63F652D744B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +86,10 @@ Global
 		{61130DB6-5865-4EF6-9DCF-0323C270EAF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61130DB6-5865-4EF6-9DCF-0323C270EAF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61130DB6-5865-4EF6-9DCF-0323C270EAF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70F54049-F933-406E-9051-E63F652D744B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70F54049-F933-406E-9051-E63F652D744B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70F54049-F933-406E-9051-E63F652D744B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70F54049-F933-406E-9051-E63F652D744B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -106,6 +104,7 @@ Global
 		{EDD6841F-91D5-49C8-98A5-6BF00DDD22FD} = {B4EDAE8A-1DCD-48C3-AAF8-BDFC38E67E44}
 		{26179A39-61D4-4BDC-AF4B-DF87FBD0DADA} = {5B5D43F1-1180-4B57-929C-96785A06AC74}
 		{61130DB6-5865-4EF6-9DCF-0323C270EAF2} = {5B5D43F1-1180-4B57-929C-96785A06AC74}
+		{70F54049-F933-406E-9051-E63F652D744B} = {5B5D43F1-1180-4B57-929C-96785A06AC74}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B832640-D437-4400-A2A3-BFF907D5DF38}
