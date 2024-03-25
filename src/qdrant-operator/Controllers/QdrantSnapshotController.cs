@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Text;
+using System.Threading.Tasks;
+
+using Amazon;
+using Amazon.S3;
+using Amazon.S3.Model;
 
 using AsyncKeyedLock;
 
@@ -12,23 +15,17 @@ using k8s.Models;
 
 using Microsoft.Extensions.Logging;
 
+using Neon.Common;
+using Neon.Diagnostics;
+using Neon.K8s;
+using Neon.K8s.Core;
 using Neon.Operator.Attributes;
 using Neon.Operator.Controllers;
 using Neon.Operator.Rbac;
-
-using Neon.K8s;
-using Neon.K8s.Core;
-using Neon.Diagnostics;
 using Neon.Operator.Util;
-using Amazon.S3;
-using Amazon;
-using Amazon.S3.Model;
 
-using QdrantOperator.Util;
 using QdrantOperator.Entities;
-using Neon.Common;
-using Qdrant.Client.Grpc;
-using System.Net.Sockets;
+using QdrantOperator.Util;
 
 
 namespace QdrantOperator.Controllers
@@ -44,7 +41,7 @@ namespace QdrantOperator.Controllers
         private readonly IKubernetes                        k8s;
         private readonly ILogger<QdrantSnapshotController>  logger;
         private readonly AsyncKeyedLocker<string>           lockProvider;
-        private readonly ClusterHelper                      clusterHelper;
+        private readonly IClusterHelper                     clusterHelper;
 
         /// <summary>
         /// Constructor.
@@ -57,7 +54,7 @@ namespace QdrantOperator.Controllers
             IKubernetes k8s,
             ILogger<QdrantSnapshotController> logger,
             AsyncKeyedLocker<string> lockProvider,
-            ClusterHelper clusterHelper)
+            IClusterHelper clusterHelper)
         {
             this.k8s          = k8s;
             this.logger       = logger;
@@ -152,79 +149,106 @@ namespace QdrantOperator.Controllers
                     }
                 }
 
-                var client = await clusterHelper.CreateQdrantClientAsync(
-                    cluster: cluster,
-                    namespaceParameter: resource.Namespace(),
+                await CreateSnapshotInternalAsync(
+                    cluster:cluster,
+                    resource: resource,
                     nodeName: nodeName);
 
-                var snapshot = await client.CreateSnapshotAsync(resource.Spec.Collection);
-
-                var SnapshotPatch = OperatorHelper.CreatePatch<QdrantSnapshot>();
-
-                if (resource.Status.Nodes == null)
-                {
-                    SnapshotPatch.Replace(path => path.Status.Nodes, new Dictionary<string, Models.SnapshotNodeStatus>());
-                }
-
-                var newSnapshotStatus = new Models.SnapshotNodeStatus()
-                {
-                    Name = snapshot.Name,
-                    CreationTime = snapshot.CreationTime.ToDateTime(),
-                    Size = snapshot.Size,
-                    Checksum = snapshot.Checksum,
-
-                };
-
-                SnapshotPatch.Replace(path => path.Status.Nodes[nodeName], newSnapshotStatus);
-
-                resource = await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<QdrantSnapshot>(
-                    patch: OperatorHelper.ToV1Patch<QdrantSnapshot>(SnapshotPatch),
-                    name: resource.Name(),
-                    namespaceParameter: resource.Namespace());
             }
 
             for (int i = 0; i < cluster.Spec.Replicas; i++)
             {
                 var nodeName = $"{cluster.GetFullName()}-{i}";
 
-                var snapshotName = resource.Status.Nodes[nodeName].Name;
-                var qdrantPod = await k8s.CoreV1.ReadNamespacedPodAsync(nodeName, resource.Namespace());
-                var qdrantContainer = qdrantPod.Spec.Containers
+                await CreateJobInternalAsync(
+                    resource:resource,
+                    nodeName:nodeName,
+                    awsAccessKeyId: awsAccessKeyId,
+                    awsSecretAccessKey: awsSecretAccessKey);
+            }
+
+            return ResourceControllerResult.Ok();
+
+        }
+
+        internal async Task CreateSnapshotInternalAsync(V1QdrantCluster cluster, QdrantSnapshot resource, string nodeName)
+        {
+            var client = await clusterHelper.CreateQdrantClientAsync(
+                    cluster: cluster,
+                    namespaceParameter: resource.Metadata.NamespaceProperty,
+                    nodeName: nodeName);
+
+            var snapshot = await client.CreateSnapshotAsync(resource.Spec.Collection);
+
+            var SnapshotPatch = OperatorHelper.CreatePatch<QdrantSnapshot>();
+
+            if (resource.Status.Nodes == null)
+            {
+                SnapshotPatch.Replace(path => path.Status.Nodes, new Dictionary<string, Models.SnapshotNodeStatus>());
+            }
+
+            var newSnapshotStatus = new Models.SnapshotNodeStatus()
+            {
+                Name = snapshot.Name,
+                CreationTime = snapshot.CreationTime.ToDateTime(),
+                Size = snapshot.Size,
+                Checksum = snapshot.Checksum,
+
+            };
+
+            SnapshotPatch.Replace(path => path.Status.Nodes[nodeName], newSnapshotStatus);
+
+            resource = await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<QdrantSnapshot>(
+                patch: OperatorHelper.ToV1Patch<QdrantSnapshot>(SnapshotPatch),
+                name: resource.Name(),
+                namespaceParameter: resource.Namespace());
+
+        }
+
+        internal async Task CreateJobInternalAsync(
+            QdrantSnapshot resource,
+            string nodeName,
+            string awsAccessKeyId,
+            string awsSecretAccessKey)
+        {
+            var snapshotName    = resource.Status.Nodes[nodeName].Name;
+            var qdrantPod       = await k8s.CoreV1.ReadNamespacedPodAsync(nodeName, resource.Namespace());
+            var qdrantContainer = qdrantPod.Spec.Containers
                         .Where(c => c.Name == Constants.QdrantContainerName)
                         .FirstOrDefault();
 
-                if (qdrantContainer == null)
+            if (qdrantContainer == null)
+            {
+                logger?.LogInformationEx("qdrant container is null");
+                throw new Exception($"qdrant container not found in pod: {nodeName}");
+            }
+
+            var job = new V1Job().Initialize();
+
+            job.Metadata.Name = $"upload-{nodeName}-{NeonHelper.CreateBase36Uuid()}";
+            job.Metadata.NamespaceProperty = resource.Namespace();
+
+            var volumes      = qdrantPod.Spec.Volumes.Where(v => v.PersistentVolumeClaim != null).ToList();
+            var volumeMounts = qdrantContainer.VolumeMounts.Where(vm => volumes.Any(v => v.Name == vm.Name)).ToList();
+
+            job.Spec = new V1JobSpec()
+            {
+                Template = new V1PodTemplateSpec()
                 {
-                    logger?.LogInformationEx("qdrant container is null");
-                    continue;
-                }
-
-                var job = new V1Job().Initialize();
-
-                job.Metadata.Name = $"upload-{nodeName}-{NeonHelper.CreateBase36Uuid()}";
-                job.Metadata.NamespaceProperty = resource.Namespace();
-
-                var volumes      = qdrantPod.Spec.Volumes.Where(v => v.PersistentVolumeClaim != null).ToList();
-                var volumeMounts = qdrantContainer.VolumeMounts.Where(vm => volumes.Any(v => v.Name == vm.Name)).ToList();
-
-                job.Spec = new V1JobSpec()
-                {
-                    Template = new V1PodTemplateSpec()
+                    Metadata = new V1ObjectMeta()
                     {
-                        Metadata = new V1ObjectMeta()
-                        {
-                            Annotations = new Dictionary<string, string>()
+                        Annotations = new Dictionary<string, string>()
                                 {
                                     { "sidecar.istio.io/inject", "false" }
                                 }
-                        },
-                        Spec = new V1PodSpec()
-                        {
-                            Volumes = volumes,
-                            SecurityContext = qdrantPod.Spec.SecurityContext,
-                            Tolerations = qdrantPod.Spec.Tolerations,
-                            RestartPolicy = "OnFailure",
-                            Containers = new List<V1Container>()
+                    },
+                    Spec = new V1PodSpec()
+                    {
+                        Volumes = volumes,
+                        SecurityContext = qdrantPod.Spec.SecurityContext,
+                        Tolerations = qdrantPod.Spec.Tolerations,
+                        RestartPolicy = "OnFailure",
+                        Containers = new List<V1Container>()
                             {
                                 new V1Container()
                                 {
@@ -277,28 +301,25 @@ namespace QdrantOperator.Controllers
                                     VolumeMounts = volumeMounts,
                                 }
                             },
-                            NodeSelector = new Dictionary<string, string>()
+                        NodeSelector = new Dictionary<string, string>()
                             {
                                 {
                                     "kubernetes.io/hostname", qdrantPod.Spec.NodeName
                                 }
                             },
-                        }
                     }
-                };
+                }
+            };
 
-                await k8s.BatchV1.CreateNamespacedJobAsync(job, resource.Namespace());
+            await k8s.BatchV1.CreateNamespacedJobAsync(job, resource.Namespace());
 
-                var SnapshotPatch = OperatorHelper.CreatePatch<QdrantSnapshot>();
-                SnapshotPatch.Replace(path => path.Status.Nodes[nodeName].JobName, job.Name());
+            var SnapshotPatch = OperatorHelper.CreatePatch<QdrantSnapshot>();
+            SnapshotPatch.Replace(path => path.Status.Nodes[nodeName].JobName, job.Name());
 
-                await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<QdrantSnapshot>(
-                                       patch: OperatorHelper.ToV1Patch<QdrantSnapshot>(SnapshotPatch),
-                                       name: resource.Name(),
-                                       namespaceParameter: resource.Namespace());
-            }
-
-            return ResourceControllerResult.Ok();
+            await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<QdrantSnapshot>(
+                                   patch: OperatorHelper.ToV1Patch<QdrantSnapshot>(SnapshotPatch),
+                                   name: resource.Name(),
+                                   namespaceParameter: resource.Namespace());
 
         }
 

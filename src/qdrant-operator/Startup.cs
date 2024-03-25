@@ -60,7 +60,7 @@ namespace QdrantOperator
             var logger = loggerFactory.CreateLogger<OperatorStartup>();
 
             services.AddSingleton<ILoggerFactory>(loggerFactory);
-            services.AddSingleton<ClusterHelper>();
+            services.AddSingleton<IClusterHelper, ClusterHelper>();
             services.AddLogging();
             services.AddKubernetesOperator();
             services.AddQuartz(q =>

@@ -76,12 +76,37 @@ spec:
           status:
             properties:
               nodes:
+                description: Nodes saves the status of the snapshot of each node.
                 items:
                   properties:
                     key:
                       type: string
                     value:
-                      type: string
+                      properties:
+                        time:
+                          description: Time spent to process this request.
+                          format: double
+                          type: number
+                        status:
+                          description: status of the snapshot node.
+                          type: string
+                        name:
+                          description: Name of the snapshot node.
+                          type: string
+                        creationTime:
+                          description: Creation time of the snapshot node.
+                          format: date-time
+                          type: string
+                        size:
+                          description: Size of the snapshot node.
+                          format: int64
+                          type: integer
+                        checksum:
+                          description: Checksum of the snapshot node.
+                          type: string
+                        jobName:
+                          type: string
+                      type: object
                   type: object
                 type: array
             type: object

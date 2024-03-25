@@ -30,6 +30,29 @@ namespace QdrantOperator.Xunit
         public QdrantClient QdrantClient { get; private set; }
 
         /// <summary>
+        /// Start method.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="name"></param>
+        /// <param name="args"></param>
+        /// <param name="hostInterface"></param>
+        /// <returns></returns>
+        public TestFixtureStatus Start(
+            string image = null,
+            string name = "qdrant-test",
+            string[] args = null,
+            string hostInterface = null)
+        {
+            base.CheckDisposed();
+
+            return base.Start(
+                () =>
+                {
+                    StartAsComposed(image, name, args, hostInterface);
+                });
+        }
+
+        /// <summary>
         /// Starts the Qdrant container as a composed service.
         /// </summary>
         /// <param name="image">The Docker image to use. If null, the latest version of the qdrant image will be used.</param>

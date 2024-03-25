@@ -22,7 +22,7 @@ namespace QdrantOperator.Util
     /// <summary>
     /// Qdrant cluster helper.
     /// </summary>
-    public class ClusterHelper
+    public class ClusterHelper : IClusterHelper
     {
         private readonly IKubernetes            k8s;
         private readonly ILogger<ClusterHelper> logger;
@@ -48,7 +48,7 @@ namespace QdrantOperator.Util
             this.services      = services;
         }
 
-        internal async Task<QdrantClient> CreateQdrantClientAsync(
+        public async Task<QdrantClient> CreateQdrantClientAsync(
             V1QdrantCluster cluster,
             string namespaceParameter,
             string nodeName = null)
