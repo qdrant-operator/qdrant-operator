@@ -14,4 +14,7 @@
         <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.4.0" />
         <PackageReference Include="YamlDotNet" Version="13.7.1" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\QdrantOperator.Common\QdrantOperator.Common.csproj" />
+    </ItemGroup>
 </Project>

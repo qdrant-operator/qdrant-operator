@@ -47,7 +47,13 @@ namespace QdrantOperator.Util
             this.loggerFactory = loggerFactory;
             this.services      = services;
         }
-
+        /// <summary>
+        /// Creating qdrant client
+        /// </summary>
+        /// <param name="cluster"></param>
+        /// <param name="namespaceParameter"></param>
+        /// <param name="nodeName"></param>
+        /// <returns></returns>
         public async Task<QdrantClient> CreateQdrantClientAsync(
             V1QdrantCluster cluster,
             string namespaceParameter,

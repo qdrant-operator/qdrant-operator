@@ -214,6 +214,46 @@ namespace QdrantOperator
         minTokenLen: 1
         maxTokenLen: 10
         loweracase: true";
+        /// <summary>
+        /// The name of the environment variable used to specify the snapshot ID.
+        /// </summary>
+        public const string QdrantSnapshotId     = "SNAPSHOT_ID";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the snapshot name.
+        /// </summary>
+        public const string QdrantSnapshotName   = "SNAPSHOT_NAME";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the collection name.
+        /// </summary>
+        public const string QdrantCollectionName = "COLLECTION_NAME";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the S3 access key.
+        /// </summary>
+        public const string S3AccessKey          = "S3_ACCESS_KEY";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the S3 secret access key.
+        /// </summary>
+        public const string S3SecretAccessKey    = "S3_SECRET_ACCESS_KEY";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the S3 bucket name.
+        /// </summary>
+        public const string S3BucketName         = "S3_BUCKET_NAME";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the S3 bucket region.
+        /// </summary>
+        public const string S3BucketRegion       = "S3_BUCKET_REGION";
+
+        /// <summary>
+        /// The name of the environment variable used to specify the Qdrant node ID.
+        /// </summary>
+        public const string QdrantNodeId         = "QDRANT_NODE_ID";
+
 
         /// <summary>
         /// Generates the name of the headless service for a given resource name.

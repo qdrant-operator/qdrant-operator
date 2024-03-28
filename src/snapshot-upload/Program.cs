@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
 
 using Amazon;
@@ -10,6 +11,10 @@ using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
 
 using Neon.Diagnostics;
+
+using QdrantOperator;
+
+
 
 namespace SnapshotUpload
 {
@@ -33,20 +38,20 @@ namespace SnapshotUpload
             var logger = loggerFactory.CreateLogger("qdrant-upload-job");
 
             var s3 = new AmazonS3Client(
-                awsAccessKeyId: Environment.GetEnvironmentVariable("S3_ACCESS_KEY"),
-                awsSecretAccessKey: Environment.GetEnvironmentVariable("S3_SECRET_ACCESS_KEY"),
+                awsAccessKeyId: Environment.GetEnvironmentVariable(Constants.S3AccessKey),
+                awsSecretAccessKey: Environment.GetEnvironmentVariable(Constants.S3SecretAccessKey),
                 new AmazonS3Config()
                 {
                     Timeout = TimeSpan.FromHours(1),
                     RetryMode = Amazon.Runtime.RequestRetryMode.Standard,
                     MaxErrorRetry = 3,
-                    RegionEndpoint = RegionEndpoint.GetBySystemName(Environment.GetEnvironmentVariable("S3_BUCKET_REGION"))
+                    RegionEndpoint = RegionEndpoint.GetBySystemName(Environment.GetEnvironmentVariable(Constants.S3BucketRegion))
                 });
 
-            var snapshotId     = Environment.GetEnvironmentVariable("SNAPSHOT_ID");
-            var snapshotName   = Environment.GetEnvironmentVariable("SNAPSHOT_NAME");
-            var nodeId         = Environment.GetEnvironmentVariable("QDRANT_NODE_ID");
-            var collectionName = Environment.GetEnvironmentVariable("COLLECTION_NAME");
+            var snapshotId     = Environment.GetEnvironmentVariable(Constants.QdrantSnapshotId);
+            var snapshotName   = Environment.GetEnvironmentVariable(Constants.QdrantSnapshotName);
+            var nodeId         = Environment.GetEnvironmentVariable(Constants.QdrantNodeId);
+            var collectionName = Environment.GetEnvironmentVariable(Constants.QdrantCollectionName);
 
             logger?.LogInformationEx(() => $"Uploading data");
 
@@ -69,7 +74,7 @@ namespace SnapshotUpload
                 {
                     var putRequest = new PutObjectRequest
                     {
-                        BucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME"),
+                        BucketName = Environment.GetEnvironmentVariable(Constants.S3BucketName),
                         Key = key,
                         InputStream = stream,
 

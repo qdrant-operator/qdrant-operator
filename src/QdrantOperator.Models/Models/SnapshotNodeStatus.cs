@@ -33,6 +33,9 @@ namespace QdrantOperator.Models
         /// </summary>
         public string Checksum { get; set; }
 
+        /// <summary>
+        /// Job name of the snapshot node.
+        /// </summary>
         public string JobName { get; set; }
 
     }

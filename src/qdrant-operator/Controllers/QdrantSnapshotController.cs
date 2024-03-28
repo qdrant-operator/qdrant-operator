@@ -85,28 +85,7 @@ namespace QdrantOperator.Controllers
                 return ResourceControllerResult.RequeueEvent(TimeSpan.FromMinutes(1));
             }
 
-
-            cluster.Status.Conditions ??= new List<V1Condition>();
-
-            var condition = new V1Condition()
-            {
-                Type = Conditions.CreatingSnapshot,
-                Status = Conditions.TrueStatus,
-                LastTransitionTime = DateTime.UtcNow,
-            };
-
-            cluster.Status.Conditions = cluster.Status.Conditions.Where(c => c.Type != condition.Type).ToList();
-            cluster.Status.Conditions.Add(condition);
-
-            var patch = OperatorHelper.CreatePatch<V1QdrantCluster>();
-
-            patch.Replace(path => path.Status.Conditions, cluster.Status.Conditions);
-
-            await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<V1QdrantCluster>(
-                patch: OperatorHelper.ToV1Patch<V1QdrantCluster>(patch),
-                name: resource.Name(),
-                namespaceParameter: resource.Namespace());
-
+            await cluster.SetIsCreatingSnapshotAsync(k8s);
 
             var secret = await k8s.CoreV1.ReadNamespacedSecretAsync(name: resource.Spec.S3.AccessKey.Name, namespaceParameter: resource.Namespace());
             var awsAccessKeyId = Encoding.UTF8.GetString(secret.Data[resource.Spec.S3.AccessKey.Key]);
@@ -163,8 +142,8 @@ namespace QdrantOperator.Controllers
                 await CreateJobInternalAsync(
                     resource:resource,
                     nodeName:nodeName,
-                    awsAccessKeyId: awsAccessKeyId,
-                    awsSecretAccessKey: awsSecretAccessKey);
+                    awsAccessKey: resource.Spec.S3.AccessKey,
+                    awsSecretAccessKey: resource.Spec.S3.SecretAccessKey);
             }
 
             return ResourceControllerResult.Ok();
@@ -182,9 +161,15 @@ namespace QdrantOperator.Controllers
 
             var SnapshotPatch = OperatorHelper.CreatePatch<QdrantSnapshot>();
 
+            if (resource.Status == null)
+            {
+                resource.Status = new Models.SnapshotStatus();
+                SnapshotPatch.Replace(path => path.Status, resource.Status);
+            }
+
             if (resource.Status.Nodes == null)
             {
-                SnapshotPatch.Replace(path => path.Status.Nodes, new Dictionary<string, Models.SnapshotNodeStatus>());
+                resource.Status.Nodes = new Dictionary<string, Models.SnapshotNodeStatus>();
             }
 
             var newSnapshotStatus = new Models.SnapshotNodeStatus()
@@ -195,21 +180,24 @@ namespace QdrantOperator.Controllers
                 Checksum = snapshot.Checksum,
 
             };
+            resource.Status.Nodes[nodeName] = newSnapshotStatus;
+            SnapshotPatch.Replace(path => path.Status.Nodes, resource.Status.Nodes);
 
-            SnapshotPatch.Replace(path => path.Status.Nodes[nodeName], newSnapshotStatus);
 
             resource = await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<QdrantSnapshot>(
                 patch: OperatorHelper.ToV1Patch<QdrantSnapshot>(SnapshotPatch),
                 name: resource.Name(),
                 namespaceParameter: resource.Namespace());
 
+            await cluster.SetIsCreatingSnapshotAsync(k8s,false);
+
         }
 
         internal async Task CreateJobInternalAsync(
             QdrantSnapshot resource,
             string nodeName,
-            string awsAccessKeyId,
-            string awsSecretAccessKey)
+            V1SecretKeySelector awsAccessKey,
+            V1SecretKeySelector awsSecretAccessKey)
         {
             var snapshotName    = resource.Status.Nodes[nodeName].Name;
             var qdrantPod       = await k8s.CoreV1.ReadNamespacedPodAsync(nodeName, resource.Namespace());
@@ -228,7 +216,7 @@ namespace QdrantOperator.Controllers
             job.Metadata.Name = $"upload-{nodeName}-{NeonHelper.CreateBase36Uuid()}";
             job.Metadata.NamespaceProperty = resource.Namespace();
 
-            var volumes      = qdrantPod.Spec.Volumes.Where(v => v.PersistentVolumeClaim != null).ToList();
+            var volumes      = qdrantPod.Spec.Volumes.Where(v => v.Name == Constants.QdrantSnapshots).ToList();
             var volumeMounts = qdrantContainer.VolumeMounts.Where(vm => volumes.Any(v => v.Name == vm.Name)).ToList();
 
             job.Spec = new V1JobSpec()
@@ -238,9 +226,9 @@ namespace QdrantOperator.Controllers
                     Metadata = new V1ObjectMeta()
                     {
                         Annotations = new Dictionary<string, string>()
-                                {
-                                    { "sidecar.istio.io/inject", "false" }
-                                }
+                        {
+                            { "sidecar.istio.io/inject", "false" }
+                        }
                     },
                     Spec = new V1PodSpec()
                     {
@@ -259,42 +247,48 @@ namespace QdrantOperator.Controllers
                                     {
                                         new V1EnvVar()
                                         {
-                                            Name = "SNAPSHOT_ID",
+                                            Name = Constants.QdrantSnapshotId,
                                             Value = resource.Uid()
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "SNAPSHOT_NAME",
+                                            Name =  Constants.QdrantSnapshotName,
                                             Value = snapshotName
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "COLLECTION_NAME",
+                                            Name = Constants.QdrantCollectionName,
                                             Value = resource.Spec.Collection
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "S3_ACCESS_KEY",
-                                            Value = awsAccessKeyId
+                                            Name = Constants.S3AccessKey,
+                                            ValueFrom = new V1EnvVarSource()
+                                            {
+                                                SecretKeyRef = awsAccessKey
+                                            }
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "S3_SECRET_ACCESS_KEY",
-                                            Value = awsSecretAccessKey
+                                            Name = Constants.S3SecretAccessKey,
+                                            ValueFrom = new V1EnvVarSource()
+                                            {
+                                                SecretKeyRef = awsSecretAccessKey
+                                            }
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "S3_BUCKET_NAME",
+                                            Name = Constants.S3BucketName,
                                             Value = resource.Spec.S3.Bucket
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "S3_BUCKET_REGION",
+                                            Name = Constants.S3BucketRegion,
                                             Value = resource.Spec.S3.Region
                                         },
                                         new V1EnvVar()
                                         {
-                                            Name = "QDRANT_NODE_ID",
+                                            Name = Constants.QdrantNodeId,
                                             Value = nodeName
                                         }
                                     },

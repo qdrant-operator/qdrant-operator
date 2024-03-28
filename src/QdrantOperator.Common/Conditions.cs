@@ -20,5 +20,10 @@ namespace QdrantOperator
         /// Represents the true status.
         /// </summary>
         public const string TrueStatus = "True";
+
+        /// <summary>
+        /// Represents the false status.
+        /// </summary>
+        public const string FalseStatus = "False";
     }
 }

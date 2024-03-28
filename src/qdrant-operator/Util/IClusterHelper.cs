@@ -19,8 +19,18 @@ using QdrantOperator.Entities;
 
 namespace QdrantOperator.Util
 {
+    /// <summary>
+    /// interface for Qdrant cluster helper.
+    /// </summary>
     public interface IClusterHelper
     {
+        /// <summary>
+        /// Creating qdrant client async method
+        /// </summary>
+        /// <param name="cluster"></param>
+        /// <param name="namespaceParameter"></param>
+        /// <param name="nodeName"></param>
+        /// <returns></returns>
         Task<QdrantClient> CreateQdrantClientAsync(
             V1QdrantCluster cluster,
             string namespaceParameter,

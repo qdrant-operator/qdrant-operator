@@ -1,11 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 using k8s;
+using k8s.KubeConfigModels;
 using k8s.Models;
 
+using Neon.Operator.Util;
+using Neon.K8s;
+using OpenTelemetry.Resources;
+
 using QdrantOperator.Models;
+using Neon.Common;
 
 namespace QdrantOperator
 {
@@ -183,6 +191,70 @@ namespace QdrantOperator
                                             && c.Status == QdrantOperator.Conditions.TrueStatus);
             }
             
+        }
+
+        /// <summary>
+        /// Adding a condition to the list of conditions by patching it.
+        /// If the condition already exists, it will be updated.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="type"></param>
+        /// <param name="status"></param>
+        /// <param name="message"></param>
+        /// <param name="reason"></param>
+        /// <returns></returns>
+
+        public async Task SetConditionAsync(IKubernetes k8s, string type, string status, string message = null, string reason = null)
+        {
+            var patch = OperatorHelper.CreatePatch<V1QdrantCluster>();
+
+            if (Status == null)
+            {
+                Status = new V1QdrantCluster.V1QdrantClusterStatus();
+                patch.Replace(path => path.Status, Status);
+            }
+
+            var condition = new V1Condition()
+            {
+                Type = type,
+                Status = status,
+                LastTransitionTime = DateTime.UtcNow,
+            };
+
+            if (!message.IsNullOrEmpty())
+            {
+                condition.Message = message;
+            }
+
+            if (!reason.IsNullOrEmpty())
+            {
+                condition.Reason = reason;
+            }
+
+            Status.Conditions ??= new List<V1Condition>();
+
+            Status.Conditions = Status.Conditions.Where(c => c.Type != condition.Type).ToList();
+
+            Status.Conditions.Add(condition);
+
+            patch.Replace(path => path.Status.Conditions, Status.Conditions);
+
+            await k8s.CustomObjects.PatchNamespacedCustomObjectStatusAsync<V1QdrantCluster>(
+                patch: OperatorHelper.ToV1Patch<V1QdrantCluster>(patch),
+                name: Metadata.Name,
+                namespaceParameter: Metadata.NamespaceProperty);
+        }
+
+        /// <summary>
+        /// set the snapshot creation status. The default value is true.
+        /// </summary>
+        /// <param name="k8s"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+
+        public Task SetIsCreatingSnapshotAsync(IKubernetes k8s, bool value = true)
+        {
+            return SetConditionAsync(k8s, Conditions.CreatingSnapshot, value ? Conditions.TrueStatus : Conditions.FalseStatus);
         }
     }
 }
